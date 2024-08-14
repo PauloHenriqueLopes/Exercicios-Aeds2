@@ -19,7 +19,7 @@ int main() {
     int passo = 0;
 
     do{ 
-        fgets(string, 25, stdin);
+        fgets(string, 100, stdin);
         string[strlen(string) - 1] = '\0';
         if(strcmp(string, "FIM") != 0){
             lista[passo] = contaMaiusculaRecursiva(string, 0, 0);
