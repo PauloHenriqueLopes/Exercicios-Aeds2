@@ -16,7 +16,7 @@ int contaMaiuscula(char string[25]) {
 }
 
 int main() {
-    char string[25];
+    char string[100];
     int lista[25];
     int passo = 0;
 
