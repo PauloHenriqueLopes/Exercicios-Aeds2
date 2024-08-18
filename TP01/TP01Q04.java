@@ -2,7 +2,7 @@ import java.util.*;
 
 public class TP01Q04 {
     public static String alteracaoAleatoria(String string, char x, char y) {
-        String stringAlterada = string.replaceAll(x, y);
+        String stringAlterada = string.replace(x, y);
         return stringAlterada;
     }
     public static void main(String[] args) {
