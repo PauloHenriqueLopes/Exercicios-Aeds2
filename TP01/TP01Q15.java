@@ -29,7 +29,7 @@ public class TP01Q15 {
             real = true;
         }
 
-        return verificarTipo(string, vogais, consoantes, inteiro, real, passo + 1);
+        return verificarTipo(string, vogais, consoantes, inteiro, real, (passo + 1));
     }
 
     private static boolean isVogal(char c) {
