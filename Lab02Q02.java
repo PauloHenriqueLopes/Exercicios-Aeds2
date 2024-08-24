@@ -5,50 +5,50 @@ public class Lab02Q02 {
         Scanner scanner = new Scanner(System.in);
         String input;
         int inicio, fim;
-        String contagem = "";
+        StringBuilder contagem = new StringBuilder();
 
-        while(true) {
-            input = scanner.nextLine();
-
-            if(input.trim().isEmpty()) {
+        while (true) {
+            if (!scanner.hasNextLine()) {
                 break;
+            }
+
+            input = scanner.nextLine().trim();
+
+            if (input.isEmpty()) {
+                break;
+            }
+
+            String[] partes = input.split(" ");
+            if (partes.length != 2) {
+                System.out.println("Erro, digite dois números separados por espaço");
+                continue;
             }
 
             try {
-                inicio = Integer.parseInt(input);
-            } catch (Exception e) {
-                System.out.println("Erro, digite um numero");
-                break;
-            }
-            
-            input = scanner.nextLine();
-
-            if(input.trim().isEmpty()) {
-                break;
+                inicio = Integer.parseInt(partes[0]);
+                fim = Integer.parseInt(partes[1]);
+            } catch (NumberFormatException e) {
+                System.out.println("Erro, digite números válidos");
+                continue;
             }
 
-            try {
-                fim = Integer.parseInt(input);
-            } catch (Exception e) {
-                System.out.println("Erro, digite um numero");
-                break;
-            }
-
-            if(fim < inicio) {
+            if (fim < inicio) {
                 System.out.println("Erro, fim menor que o inicio");
-                break;
+                continue;
             }
 
-            for(int i = inicio; i <= fim; i++) {
-                contagem = contagem + i + "";
+            contagem.setLength(0);
+
+            for (int i = inicio; i <= fim; i++) {
+                contagem.append(i);
             }
 
-            for(int i = fim; i >= inicio; i--) {
-                contagem = contagem + i + "";
+            for (int i = fim; i >= inicio; i--) {
+                String reversed = new StringBuilder(String.valueOf(i)).reverse().toString();
+                contagem.append(reversed);
             }
 
-            System.out.println(contagem);
-            contagem = "";
+            System.out.println(contagem.toString());
         }
 
         scanner.close();
