@@ -24,7 +24,7 @@ int main() {
     char stringAlterada[200];
     char x , y;
 
-    srand(time(NULL));
+    srand(4);
 
     do {
         fgets(string, 200, stdin);
