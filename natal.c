@@ -14,7 +14,6 @@ int main() {
     char *listaNomes[100];
 
     do {
-        printf("Digite a quantidade de pessoas (entre 1 e 100): ");
         scanf("%d", &quantidade);
         while (getchar() != '\n');
     } while (quantidade < 1 || quantidade > 100);
