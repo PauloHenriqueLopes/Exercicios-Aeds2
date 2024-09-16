@@ -54,6 +54,6 @@ int main() {
         free(listaNomes[i]);
     }
 
-    printf("\nSe comporatam: %d | Nao se comportaram: %d\n", bem, mal);
+    printf("Se comporatam: %d | Nao se comportaram: %d\n", bem, mal);
 
 }
