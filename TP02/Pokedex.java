@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public class pokedex {
+public class Pokedex {
     public class Pokemon {
         private int id;
         private int generation;
@@ -13,10 +13,10 @@ public class pokedex {
         private Double height;
         private int captureRate;
         private Boolean isLegendary;
-        private Date captureDate;
+        private String captureDate;
 
         //construtores
-        public Pokemon(int id, int generation, String name, String description, String[] types, String[] abilities, Double weight, Double height, int captureRate, Boolean isLegendary, Date captureDate) {
+        public Pokemon(int id, int generation, String name, String description, String[] types, String[] abilities, Double weight, Double height, int captureRate, Boolean isLegendary, String captureDate) {
             this.id = id;
             this.generation = generation;
             this.name = name;
@@ -41,7 +41,7 @@ public class pokedex {
             this.height = 0.0;
             this.captureRate = 0;
             this.isLegendary = false;
-            this.captureDate = new Date();
+            this.captureDate = "";
         }
 
 
@@ -76,7 +76,7 @@ public class pokedex {
         public Boolean getIsLengendary() {
             return isLegendary;
         }
-        public Date getCapDate() {
+        public String getCaptureDate() {
             return captureDate;
         }
 
@@ -112,7 +112,7 @@ public class pokedex {
         public void setIsLegendary(Boolean isLegendary) {
             this.isLegendary = isLegendary;
         }
-        public void setCaptureDate(Date capturDate) {
+        public void setCaptureDate(String capturDate) {
             this.captureDate = capturDate;
         }
 
@@ -121,14 +121,26 @@ public class pokedex {
             return new Pokemon(this.id, this.generation, this.name, this.description, 
                                this.types.clone(), this.abilities.clone(), 
                                this.weight, this.height, this.captureRate, 
-                               this.isLegendary, (Date) this.captureDate.clone());
+                               this.isLegendary, this.captureDate);
         }
 
         //imprimir
         public void imprimir(Pokemon pokemon) {
-            System.out.println("[#" + pokemon.getId() + " -> " + pokemon.getName() + ": " + pokemon.getDescription() + " - " + getTypes() + " - " +
-            pokemon.getAbilities() + " - " + pokemon.getWeight() + "kg - " + pokemon.getHeight() + "m - " + pokemon.getCaptureRate() + "% - "
-             + pokemon.getIsLengendary() + " - " + pokemon.getGeneration() + "gen] - " + pokemon.getCapDate());
+            System.out.print("[#" + pokemon.getId() + " -> " + pokemon.getName() + ": " + pokemon.getDescription() + " - ");
+        
+            // Imprimir tipos
+            String[] tipos = pokemon.getTypes();
+            System.out.print(Arrays.toString(tipos) + " - ");
+        
+            // Imprimir habilidades
+            String[] habilidades = pokemon.getAbilities();
+            System.out.print(Arrays.toString(habilidades) + " - ");
+        
+            // Imprimir outros atributos
+            System.out.print(pokemon.getWeight() + "kg - " + pokemon.getHeight() + "m - " +
+                             pokemon.getCaptureRate() + "% - " + pokemon.getIsLengendary() + 
+                             " - " + pokemon.getGeneration() + " gen] - " + pokemon.getCaptureDate());
+            System.out.println();
         }
 
         //ler
@@ -155,29 +167,58 @@ public class pokedex {
             this.captureRate = scanner.nextInt();
             System.out.println("É um pokemon Lendario? ");
             this.isLegendary = scanner.nextBoolean();
-            this.captureDate = new Date();
+            System.out.println("Data de captura: ");
+            this.captureDate = scanner.nextLine();
             scanner.close();
         }
     }
+
+    public Pokemon tratamento(String[] parts) {
+        int id = Integer.parseInt(parts[0]);
+        int gen = Integer.parseInt(parts[1]);
+        String name = parts[2];
+        String description = parts[3];
+        String type1 = parts[4];
+        String type2 = parts[5];
+        String[] types = new String[] {type1, type2};
+        
+        String hab1 = parts[6].replace("\"[", "");
+        String hab2 = parts[7].replace("]\"", ""). replace(" ", "");
+        String[] habilidades = new String[] {hab1, hab2};
+        
+        Double peso = Double.parseDouble(parts[8]);
+        Double altura = Double.parseDouble(parts[9]);
+        int captura = Integer.parseInt(parts[10]);
+        Boolean lendario = parts[11].equals("0") ? false : true;
+        String data = parts[12];
+
+        return new Pokemon(id, gen, name, description, types, habilidades, peso, altura, captura, lendario, data);
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        List<Integer> idsPokemons = new ArrayList<>();
+        List<String> idsPokemons = new ArrayList<>();
+        List<Pokemon> listaPokemons = new ArrayList<>();
         String entrada;
         
         do{
             entrada = scanner.nextLine();
             if(!entrada.equals("FIM")) {
-                int id = Integer.parseInt(entrada);
-                idsPokemons.add(id);
+                idsPokemons.add(entrada);
             }
         }while(!(entrada.equals("FIM")));
 
+        Pokedex pokedex = new Pokedex();
 
-        try(Scanner lerArquivo = new Scanner(new File("/tmp/pokemon.csv"));) {
+        try(Scanner lerArquivo = new Scanner(new File("pokemon.csv"));) {
+            lerArquivo.nextLine();
             while (lerArquivo.hasNextLine()) {
                 String linha = lerArquivo.nextLine();
-                System.out.println(linha);
+                String parts[] = linha.split(",");
+                if(idsPokemons.contains(parts[0])){
+                    listaPokemons.add(pokedex.tratamento(parts));
+                }
             }
             lerArquivo.close();
         } catch(FileNotFoundException e) {
@@ -185,5 +226,9 @@ public class pokedex {
         }
 
         scanner.close();
+
+        for (Pokemon pokemon : listaPokemons) {
+            pokemon.imprimir(pokemon);
+        }
     }
 }
