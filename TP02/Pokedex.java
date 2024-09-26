@@ -173,24 +173,55 @@ public class Pokedex {
         }
     }
 
-    public Pokemon tratamento(String[] parts) {
-        int id = Integer.parseInt(parts[0]);
-        int gen = Integer.parseInt(parts[1]);
-        String name = parts[2];
-        String description = parts[3];
-        String type1 = parts[4];
-        String type2 = parts[5];
-        String[] types = new String[] {type1, type2};
-        
-        String hab1 = parts[6].replace("\"[", "");
-        String hab2 = parts[7].replace("]\"", ""). replace(" ", "");
-        String[] habilidades = new String[] {hab1, hab2};
-        
-        Double peso = Double.parseDouble(parts[8]);
-        Double altura = Double.parseDouble(parts[9]);
-        int captura = Integer.parseInt(parts[10]);
-        Boolean lendario = parts[11].equals("0") ? false : true;
-        String data = parts[12];
+    public Pokemon parsePokemon(String linha) {
+        char c;
+        StringBuilder string = new StringBuilder();
+        List<String> detalhes = new ArrayList<>(); 
+        for(int  i = 0; i < linha.length(); i++) {
+            c = linha.charAt(i);
+            if(c != ',' && c != '\"') {
+                string.append(c);
+            } else if(c == ',') {
+                detalhes.add(string.toString().trim());
+                string.setLength(0);
+            } else if(c == '\"') {
+                for(int j = i+1; j < linha.length(); j++) {
+                    c = linha.charAt(j);
+                    if(c == '\"') {
+                        i = j+1;
+                        j = linha.length();
+                    }else {
+                        string.append(c);
+                    }
+                }
+                detalhes.add(string.toString().trim());
+                string.setLength(0);
+            } 
+            if(i == (linha.length() - 1)) {
+                detalhes.add(string.toString().trim());
+                i = linha.length();
+            }
+        } 
+
+        int id = Integer.parseInt(detalhes.get(0).trim());
+        int gen = Integer.parseInt(detalhes.get(1).trim());
+        String name = detalhes.get(2).trim();
+        String description = detalhes.get(3).trim();
+        String type1 = detalhes.get(4).trim();
+        String type2 = detalhes.get(5).trim();
+        String[] types;
+        if (type2.isEmpty()) {
+            types = new String[] { type1 };
+        } else {
+            types = new String[] { type1, type2 };
+        }
+        String habilidadesString = detalhes.get(6).replace("[", "").replace("]", "").trim();
+        String[] habilidades = habilidadesString.split(",");
+        Double peso = detalhes.get(7).trim().isEmpty() ? 0.0 : Double.parseDouble(detalhes.get(7).trim());
+        Double altura = detalhes.get(8).trim().isEmpty() ? 0.0 : Double.parseDouble(detalhes.get(8).trim());
+        int captura = Integer.parseInt(detalhes.get(9).trim());
+        Boolean lendario = detalhes.get(10).equals("0") ? false : true;
+        String data = detalhes.get(11).trim();
 
         return new Pokemon(id, gen, name, description, types, habilidades, peso, altura, captura, lendario, data);
     }
@@ -200,6 +231,7 @@ public class Pokedex {
 
         List<String> idsPokemons = new ArrayList<>();
         List<Pokemon> listaPokemons = new ArrayList<>();
+        List<String> linhaCsv = new ArrayList<>();
         String entrada;
         
         do{
@@ -211,18 +243,25 @@ public class Pokedex {
 
         Pokedex pokedex = new Pokedex();
 
-        try(Scanner lerArquivo = new Scanner(new File("pokemon.csv"));) {
+        try(Scanner lerArquivo = new Scanner(new File("/tmp/pokemon.csv"));) {
             lerArquivo.nextLine();
             while (lerArquivo.hasNextLine()) {
                 String linha = lerArquivo.nextLine();
-                String parts[] = linha.split(",");
-                if(idsPokemons.contains(parts[0])){
-                    listaPokemons.add(pokedex.tratamento(parts));
-                }
+                linhaCsv.add(linha);
             }
             lerArquivo.close();
         } catch(FileNotFoundException e) {
             System.out.println("Arquivo nao encontrado: " + e.getMessage());
+        }
+
+        for(int i = 0; i < idsPokemons.size(); i++) {
+            for(int j = 0; j < linhaCsv.size(); j++) {
+                String[] parts = linhaCsv.get(j).split(",");
+                if(idsPokemons.get(i).equals(parts[0])) {
+                    listaPokemons.add(pokedex.parsePokemon(linhaCsv.get(j)));
+                    j = linhaCsv.size();
+                }
+            }
         }
 
         scanner.close();
