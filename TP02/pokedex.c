@@ -60,13 +60,13 @@ char * replace(
 void imprimir(Pokemon pokemon) {
     printf("[#%s -> %s: %s - ", pokemon.id, pokemon.name, pokemon.description);
     if(strcmp(pokemon.types[1], " ") == 0) {
-        printf("%s - ", pokemon.types[0]);
+        printf("['%s'] - ", pokemon.types[0]);
     } else {
-        printf("%s, %s - ", pokemon.types[0], pokemon.types[1]);
+        printf("['%s', '%s'] - ", pokemon.types[0], pokemon.types[1]);
     }
     printf("%s", pokemon.abilities);
     printf(" - ");
-    printf("%skg - %sm - %s%% - %s - %s] %s\n", pokemon.weight,
+    printf("%skg - %sm - %s%% - %s - %s gen] - %s\n", pokemon.weight,
            pokemon.height, pokemon.captureRate,
            pokemon.isLegendary ? "true" : "false",
            pokemon.generation, pokemon.captureDate);
@@ -116,10 +116,18 @@ Pokemon parsePokemon(char *linha) {
                 break;
             }
             case 8:
-                strcpy(pokemon.weight, token);
+                if(strcmp(token, " ") == 0) {
+                    strcpy(pokemon.weight, "0.0");
+                }else {
+                    strcpy(pokemon.weight, token);
+                }
                 break;
             case 9:
-                strcpy(pokemon.height, token);
+                if(strcmp(token, " ") == 0) {
+                    strcpy(pokemon.height, "0.0");
+                }else {
+                    strcpy(pokemon.height, token);
+                }
                 break;
             case 10:
                 strcpy(pokemon.captureRate, token);
@@ -149,7 +157,7 @@ Pokemon parsePokemon(char *linha) {
 
 
 int main() {
-    FILE *file = fopen("/home/paulo/Documentos/Programação/Exercicios-Aeds2/TP02/pokemon.csv", "r");
+    FILE *file = fopen("/tmp/pokemon.csv", "r");
 
     if (!file) {
         printf("Não foi possível abrir o arquivo.");
@@ -166,6 +174,7 @@ int main() {
         char compareString[400];
         char *auxstring;
         auxstring = replace(linha, ", ", ";");
+        auxstring = replace(auxstring, ",,,", ", , ,");
         auxstring = replace(auxstring, ",,", ", ,");
         auxstring = replace(auxstring, "\"", "");
 
