@@ -207,10 +207,10 @@ public class Pokedex {
         int gen = Integer.parseInt(detalhes.get(1).trim());
         String name = detalhes.get(2).trim();
         String description = detalhes.get(3).trim();
-        String type1 = detalhes.get(4).trim();
-        String type2 = detalhes.get(5).trim();
+        String type1 = "'" + detalhes.get(4).trim() + "'";
+        String type2 = "'" + detalhes.get(5).trim() + "'";
         String[] types;
-        if (type2.isEmpty()) {
+        if (type2.equals("''")) {
             types = new String[] { type1 };
         } else {
             types = new String[] { type1, type2 };
