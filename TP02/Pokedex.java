@@ -1,5 +1,8 @@
 import java.util.*;
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class Pokedex {
     public class Pokemon {
@@ -173,6 +176,16 @@ public class Pokedex {
         }
     }
 
+    public static void lerNomes(List<String> nomesPokemons, Scanner scanner) {
+        String nome;
+        do{
+            nome = scanner.nextLine();
+            if(!nome.equals("FIM")) {
+                nomesPokemons.add(nome);
+            }
+        }while(!(nome.equals("FIM")));
+    }
+
     public Pokemon parsePokemon(String linha) {
         char c;
         StringBuilder string = new StringBuilder();
@@ -226,6 +239,142 @@ public class Pokedex {
         return new Pokemon(id, gen, name, description, types, habilidades, peso, altura, captura, lendario, data);
     }
 
+    public static void pesquisaSequencial(List<String> nomesPokemons, List<Pokemon> pokemons) {
+        long startTime = System.nanoTime();
+        int numComparacoes = 0;
+    
+        for (String nome : nomesPokemons) {
+            boolean encontrado = false;
+            for (Pokemon pokemon : pokemons) {
+                numComparacoes++;
+                if (nome.equals(pokemon.getName())) {
+                    encontrado = true;
+                    break;
+                }
+            }
+            if (encontrado) {
+                System.out.println("SIM");
+            } else {
+                System.out.println("NAO");
+            }
+        }
+    
+        long endTime = System.nanoTime();
+        double duration = (endTime - startTime) / 1_000_000_000.0;
+
+        DecimalFormat df = new DecimalFormat("#.######");
+        String formattedDuration = df.format(duration);
+    
+        // Criar arquivo de log
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("829031_sequencial.txt"))) {
+            String log = "829031\t" + formattedDuration + "\t" + numComparacoes;
+            writer.write(log);
+        } catch (IOException e) {
+            System.out.println("Erro ao escrever no arquivo: " + e.getMessage());
+        }
+    }
+
+    public static void ordenacaoPorSelecao(List<Pokemon> pokemons) {
+        long startTime = System.nanoTime();
+        int movimentacoes = 0;
+        int comparacoes = 0;
+
+        for(int i = 0; i < pokemons.size(); i++) {
+            int menorNome = i;
+            for(int j = (i+1); j < pokemons.size(); j++) {
+                comparacoes++;
+                if(pokemons.get(j).name.compareTo(pokemons.get(menorNome).name) < 0) {
+                    menorNome = j;
+                }
+            }
+
+            if(menorNome != i) {
+                Pokemon temp = pokemons.get(i);
+                pokemons.set(i, pokemons.get(menorNome));
+                pokemons.set(menorNome, temp);
+                movimentacoes+=3;
+            }
+        }
+
+        long endTime = System.nanoTime();
+        double duration = (endTime - startTime) / 1_000_000_000.0;
+
+        DecimalFormat df = new DecimalFormat("#.######");
+        String formattedDuration = df.format(duration);
+
+        for(Pokemon pokemon : pokemons) {
+            pokemon.imprimir(pokemon);
+        }
+
+        // Criar arquivo de log
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("829031_selecao.txt"))) {
+            String log = "829031\t" + comparacoes + "\t" + movimentacoes + "\t" + formattedDuration;
+            writer.write(log);
+        } catch (IOException e) {
+            System.out.println("Erro ao escrever no arquivo: " + e.getMessage());
+        }
+    }
+
+    public static void ordenacaoPorInsercao(List<Pokemon> pokemons) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        long startTime = System.nanoTime();
+        int movimentacoes = 0;
+        int comparacoes = 0;
+    
+        for (int i = 1; i < pokemons.size(); i++) {
+            int j = (i - 1);
+            Pokemon temp = pokemons.get(i);
+            Date tempDate = null;
+    
+            try {
+                tempDate = sdf.parse(temp.getCaptureDate());
+            } catch (ParseException e) {
+                e.printStackTrace();
+                continue;
+            }
+    
+            while (j >= 0) {
+                Date currentDate = null;
+                try {
+                    currentDate = sdf.parse(pokemons.get(j).getCaptureDate());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+                
+                comparacoes++;
+
+                if (currentDate.compareTo(tempDate) > 0 || 
+                    (currentDate.equals(tempDate) && pokemons.get(j).getName().compareTo(temp.getName()) > 0)) {
+                    pokemons.set(j + 1, pokemons.get(j));
+                    j--;
+                    movimentacoes++;
+                } else {
+                    break;
+                }
+            }
+            pokemons.set(j + 1, temp);
+            movimentacoes++;
+        }
+
+        long endTime = System.nanoTime();
+        double duration = (endTime - startTime) / 1_000_000_000.0;
+
+        DecimalFormat df = new DecimalFormat("#.######");
+        String formattedDuration = df.format(duration);
+    
+        for (Pokemon pokemon : pokemons) {
+            pokemon.imprimir(pokemon);
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("829031_insercao.txt"))) {
+            String log = "829031\t" + comparacoes + "\t" + movimentacoes + "\t" + formattedDuration;
+            writer.write(log);
+        } catch (IOException e) {
+            System.out.println("Erro ao escrever no arquivo: " + e.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -240,6 +389,11 @@ public class Pokedex {
                 idsPokemons.add(entrada);
             }
         }while(!(entrada.equals("FIM")));
+
+        //nomes dos pokemons
+        // List<String> nomesPokemons = new ArrayList<>();
+        // lerNomes(nomesPokemons, scanner);
+
 
         Pokedex pokedex = new Pokedex();
 
@@ -266,8 +420,13 @@ public class Pokedex {
 
         scanner.close();
 
-        for (Pokemon pokemon : listaPokemons) {
-            pokemon.imprimir(pokemon);
-        }
+        //metodos de Ordenacao/Pesquisa
+        // pesquisaSequencial(nomesPokemons, listaPokemons);
+        // ordenacaoPorSelecao(listaPokemons);
+        ordenacaoPorInsercao(listaPokemons);
+
+        // for (Pokemon pokemon : listaPokemons) {
+        //     pokemon.imprimir(pokemon);
+        // }
     }
 }
