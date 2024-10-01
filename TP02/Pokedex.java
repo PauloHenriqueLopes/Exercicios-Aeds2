@@ -375,6 +375,79 @@ public class Pokedex {
         }
     }
 
+    public static void ordenacaoPorHeapSort(List<Pokemon> pokemons) {
+        Pokemon[] array = new Pokemon[pokemons.size()];
+        Pokemon[] temp = new Pokemon[pokemons.size() + 1];
+        for(int i = 0; i < pokemons.size(); i++) {
+            temp[i+1] = pokemons.get(i);
+        }
+        array = temp;
+
+        for(int tamHeap = 2; tamHeap <= pokemons.size(); tamHeap++) {
+            construir(tamHeap, array);
+        }
+
+        int tamHeap = pokemons.size();
+        while (tamHeap > 1) {
+            Pokemon temporario = temp[1];
+            temp[1] = temp[tamHeap];
+            temp[tamHeap] = temporario;
+            tamHeap--;
+            reconstruir(tamHeap, array);
+        }
+
+        temp = array;
+        array = new Pokemon[pokemons.size()];
+        for(int i = 0; i < pokemons.size(); i++) {
+            array[i] = temp[i+1];
+        }
+        
+        for(int i = 0; i < pokemons.size(); i++) {
+            array[i].imprimir(array[i]);
+        }
+    }
+
+    public static void construir(int tamHeap, Pokemon[] temp) {
+        for(int  i = tamHeap; i > 1 && comparaPokemon(temp[i], temp[i / 2]) > 0; i/=2) {
+            Pokemon pokemonTemp = temp[i];
+            temp[i] = temp[i/2];
+            temp[i/2] = pokemonTemp;
+        }
+    }
+    
+    public static void reconstruir(int tamHeap, Pokemon[] temp) {
+        int i = 1;
+        while (i <= (tamHeap / 2)) {
+            int filho = getMaiorFilho(i, tamHeap, temp);
+            if(comparaPokemon(temp[i], temp[filho]) < 0) {
+                Pokemon pokemonTemp = temp[i];
+                temp[i] = temp[filho];
+                temp[filho] = pokemonTemp;
+                i = filho;
+            } else {
+                break;
+            }
+        }
+    }
+
+    public static int getMaiorFilho(int i, int tamHeap, Pokemon[] temp) {
+        if(2*i == tamHeap || comparaPokemon(temp[2 * i], temp[2 * i + 1]) > 0) {
+            return 2*i;
+        } else {
+            return 2* i + 1;
+        }
+    }
+
+    public static int comparaPokemon(Pokemon p1, Pokemon p2) {
+        if(p1.getHeight() > p2.getHeight()) {
+            return 1;
+        } else if(p1.getHeight() < p2.getHeight()) {
+            return -1;
+        } else {
+            return p1.getName().compareTo(p2.getName());
+        }
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -382,7 +455,6 @@ public class Pokedex {
         List<Pokemon> listaPokemons = new ArrayList<>();
         List<String> linhaCsv = new ArrayList<>();
         String entrada;
-        
         do{
             entrada = scanner.nextLine();
             if(!entrada.equals("FIM")) {
@@ -423,8 +495,11 @@ public class Pokedex {
         //metodos de Ordenacao/Pesquisa
         // pesquisaSequencial(nomesPokemons, listaPokemons);
         // ordenacaoPorSelecao(listaPokemons);
-        ordenacaoPorInsercao(listaPokemons);
-
+        // ordenacaoPorInsercao(listaPokemons);
+        // ordenacaoPorHeapSort(listaPokemons);
+        ordenacaoPorCountingSort(listaPokemons);
+        
+        
         // for (Pokemon pokemon : listaPokemons) {
         //     pokemon.imprimir(pokemon);
         // }
