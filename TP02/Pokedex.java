@@ -378,48 +378,71 @@ public class Pokedex {
     public static void ordenacaoPorHeapSort(List<Pokemon> pokemons) {
         Pokemon[] array = new Pokemon[pokemons.size()];
         Pokemon[] temp = new Pokemon[pokemons.size() + 1];
-        for(int i = 0; i < pokemons.size(); i++) {
-            temp[i+1] = pokemons.get(i);
+        for (int i = 0; i < pokemons.size(); i++) {
+            temp[i + 1] = pokemons.get(i);
         }
         array = temp;
-
-        for(int tamHeap = 2; tamHeap <= pokemons.size(); tamHeap++) {
-            construir(tamHeap, array);
+    
+        long startTime = System.nanoTime();
+        int movimentacoes = 0;
+        int comparacoes = 0;
+    
+        for (int tamHeap = 2; tamHeap <= pokemons.size(); tamHeap++) {
+           comparacoes = construir(tamHeap, array, comparacoes);
         }
-
+    
         int tamHeap = pokemons.size();
         while (tamHeap > 1) {
             Pokemon temporario = temp[1];
             temp[1] = temp[tamHeap];
             temp[tamHeap] = temporario;
+            movimentacoes++;
             tamHeap--;
-            reconstruir(tamHeap, array);
+            comparacoes = reconstruir(tamHeap, array, comparacoes);
         }
-
+    
         temp = array;
         array = new Pokemon[pokemons.size()];
-        for(int i = 0; i < pokemons.size(); i++) {
-            array[i] = temp[i+1];
+        for (int i = 0; i < pokemons.size(); i++) {
+            array[i] = temp[i + 1];
         }
-        
-        for(int i = 0; i < pokemons.size(); i++) {
-            array[i].imprimir(array[i]);
+    
+        long endTime = System.nanoTime();
+        double duration = (endTime - startTime) / 1_000_000_000.0;
+    
+        DecimalFormat df = new DecimalFormat("#.######");
+        String formattedDuration = df.format(duration);
+    
+        for (Pokemon pokemon : array) {
+            pokemon.imprimir(pokemon);
+        }
+    
+        // Criar arquivo de log
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("829031_heapsort.txt"))) {
+            String log = "829031\t" + comparacoes + "\t" + movimentacoes + "\t" + formattedDuration;
+            writer.write(log);
+        } catch (IOException e) {
+            System.out.println("Erro ao escrever no arquivo: " + e.getMessage());
         }
     }
 
-    public static void construir(int tamHeap, Pokemon[] temp) {
-        for(int  i = tamHeap; i > 1 && comparaPokemon(temp[i], temp[i / 2]) > 0; i/=2) {
+    public static int construir(int tamHeap, Pokemon[] temp, int comparacoes) {
+        for (int i = tamHeap; i > 1 && comparaPokemon(temp[i], temp[i / 2]) > 0; i /= 2) {
+            comparacoes++;
             Pokemon pokemonTemp = temp[i];
-            temp[i] = temp[i/2];
-            temp[i/2] = pokemonTemp;
+            temp[i] = temp[i / 2];
+            temp[i / 2] = pokemonTemp;
         }
+        
+        return comparacoes;
     }
     
-    public static void reconstruir(int tamHeap, Pokemon[] temp) {
+    public static int reconstruir(int tamHeap, Pokemon[] temp, int comparacoes) {
         int i = 1;
         while (i <= (tamHeap / 2)) {
             int filho = getMaiorFilho(i, tamHeap, temp);
-            if(comparaPokemon(temp[i], temp[filho]) < 0) {
+            comparacoes++;
+            if (comparaPokemon(temp[i], temp[filho]) < 0) {
                 Pokemon pokemonTemp = temp[i];
                 temp[i] = temp[filho];
                 temp[filho] = pokemonTemp;
@@ -428,6 +451,7 @@ public class Pokedex {
                 break;
             }
         }
+        return comparacoes;
     }
 
     public static int getMaiorFilho(int i, int tamHeap, Pokemon[] temp) {
@@ -448,6 +472,136 @@ public class Pokedex {
         }
     }
 
+    public static void ordenacaoPorCountingSort(List<Pokemon> pokemons) {
+        int maxRate = pokemons.stream().mapToInt(Pokemon::getCaptureRate).max().orElse(0);
+        
+        int[] count = new int[maxRate + 1];
+        Pokemon[] sorted = new Pokemon[pokemons.size()];
+        
+        Arrays.fill(count, 0);
+        
+        for (Pokemon pokemon : pokemons) {
+            count[pokemon.getCaptureRate()]++;
+        }
+        
+        for (int i = 1; i < count.length; i++) {
+            count[i] += count[i - 1];
+        }
+        
+        long startTime = System.nanoTime();
+        int[] movimentacoes = {0};
+        int[] comparacoes = {0}; 
+    
+        for (int i = pokemons.size() - 1; i >= 0; i--) {
+            int rate = pokemons.get(i).getCaptureRate();
+            sorted[count[rate] - 1] = pokemons.get(i);
+            count[rate]--;
+            movimentacoes[0]++;
+        }
+    
+        Arrays.sort(sorted, (p1, p2) -> {
+            comparacoes[0]++;
+            if (p1.getCaptureRate() == p2.getCaptureRate()) {
+                return p1.getName().compareTo(p2.getName());
+            }
+            return 0;
+        });
+    
+        for (int i = 0; i < pokemons.size(); i++) {
+            pokemons.set(i, sorted[i]);
+        }
+    
+        for (Pokemon pokemon : pokemons) {
+            pokemon.imprimir(pokemon);
+        }
+    
+        long endTime = System.nanoTime();
+        double duration = (endTime - startTime) / 1_000_000_000.0;
+        DecimalFormat df = new DecimalFormat("#.######");
+        String formattedDuration = df.format(duration);
+    
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("829031_countingsort.txt"))) {
+            String log = "829031\t" + comparacoes[0] + "\t" + movimentacoes[0] + "\t" + formattedDuration;
+            writer.write(log);
+        } catch (IOException e) {
+            System.out.println("Erro ao escrever no arquivo: " + e.getMessage());
+        }
+    }
+    
+    public static void ordenacaoPorMergeSort(List<Pokemon> pokemons) {
+        long startTime = System.nanoTime();
+        int[] movimentacoes = {0};
+        int[] comparacoes = {0};
+        merge(0, pokemons.size() - 1, pokemons, movimentacoes, comparacoes);
+        
+        long endTime = System.nanoTime();
+        double duration = (endTime - startTime) / 1_000_000_000.0;
+        DecimalFormat df = new DecimalFormat("#.######");
+        String formattedDuration = df.format(duration);
+        
+        for(Pokemon pokemon : pokemons) {
+            pokemon.imprimir(pokemon);
+        }
+
+        // Log
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("829031_mergesort.txt"))) {
+            String log = "829031\t" + comparacoes[0] + "\t" + movimentacoes[0] + "\t" + formattedDuration;
+            writer.write(log);
+        } catch (IOException e) {
+            System.out.println("Erro ao escrever no arquivo: " + e.getMessage());
+        }
+    }
+    
+    public static void merge(int esq, int dir, List<Pokemon> pokemons, int[] movimentacoes, int[] comparacoes) {
+        if (esq < dir) {
+            int meio = (esq + dir) / 2;
+            merge(esq, meio, pokemons, movimentacoes, comparacoes);
+            merge(meio + 1, dir, pokemons, movimentacoes, comparacoes);
+            intercalar(esq, meio, dir, pokemons, movimentacoes, comparacoes);
+        }
+    }
+    
+    public static void intercalar(int esq, int meio, int dir, List<Pokemon> pokemons, int[] movimentacoes, int[] comparacoes) {
+        int n1 = meio - esq + 1;
+        int n2 = dir - meio;
+    
+        Pokemon[] a1 = new Pokemon[n1];
+        Pokemon[] a2 = new Pokemon[n2];
+    
+        for (int i = 0; i < n1; i++) {
+            a1[i] = pokemons.get(esq + i);
+            movimentacoes[0]++;
+        }
+    
+        for (int j = 0; j < n2; j++) {
+            a2[j] = pokemons.get(meio + 1 + j);
+            movimentacoes[0]++;
+        }
+    
+        int i = 0, j = 0, k = esq;
+    
+        while (i < n1 && j < n2) {
+            comparacoes[0]++;
+            if (a1[i].getTypes()[0].compareTo(a2[j].getTypes()[0]) < 0 || 
+                (a1[i].getTypes()[0].equals(a2[j].getTypes()[0]) && a1[i].getName().compareTo(a2[j].getName()) < 0)) {
+                pokemons.set(k++, a1[i++]);
+                movimentacoes[0]++;
+            } else {
+                pokemons.set(k++, a2[j++]);
+                movimentacoes[0]++;
+            }
+        }
+    
+        while (i < n1) {
+            pokemons.set(k++, a1[i++]);
+            movimentacoes[0]++;
+        }
+    
+        while (j < n2) {
+            pokemons.set(k++, a2[j++]);
+            movimentacoes[0]++;
+        }
+    }
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -497,8 +651,8 @@ public class Pokedex {
         // ordenacaoPorSelecao(listaPokemons);
         // ordenacaoPorInsercao(listaPokemons);
         // ordenacaoPorHeapSort(listaPokemons);
-        ordenacaoPorCountingSort(listaPokemons);
-        
+        // ordenacaoPorCountingSort(listaPokemons);
+        ordenacaoPorMergeSort(listaPokemons);        
         
         // for (Pokemon pokemon : listaPokemons) {
         //     pokemon.imprimir(pokemon);
