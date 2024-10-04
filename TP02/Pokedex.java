@@ -602,6 +602,63 @@ public class Pokedex {
             movimentacoes[0]++;
         }
     }
+
+    public static void ordenacaoParcialPorSelecao(List<Pokemon> pokemons) {
+        for(int i = 0; i < 10; i++) {
+            int posMenorNome = i;
+            for(int j = (i+1); j < pokemons.size(); j++) {
+                if(pokemons.get(j).getName().compareTo(pokemons.get(posMenorNome).getName()) < 0) {
+                    posMenorNome = j;
+                }
+            }
+            Pokemon temp = pokemons.get(i);
+            pokemons.set(i, pokemons.get(posMenorNome));
+            pokemons.set(posMenorNome, temp);
+        }
+
+        for(int i = 0; i < 10; i++) {
+            pokemons.get(i).imprimir(pokemons.get(i));
+        }
+    }
+
+    public static void ordenacaoParcialPorQuickSort(List<Pokemon> pokemons) {
+        quickSort(0, (pokemons.size() - 1), pokemons);
+
+        for(int i = 0; i < 10; i++) {
+            pokemons.get(i).imprimir(pokemons.get(i));
+        }
+    }
+
+    public static void quickSort(int esq, int dir, List<Pokemon> pokemons) {
+        if (esq < dir) {
+            int i = esq, j = dir;
+            Pokemon pivo = pokemons.get((esq + dir) / 2);
+            
+            while (i <= j) {
+                while (pokemons.get(i).getGeneration() < pivo.getGeneration() || 
+                       (pokemons.get(i).getGeneration() == pivo.getGeneration() && 
+                        pokemons.get(i).getName().compareTo(pivo.getName()) < 0)) {
+                    i++;
+                }
+                while (pokemons.get(j).getGeneration() > pivo.getGeneration() || 
+                       (pokemons.get(j).getGeneration() == pivo.getGeneration() && 
+                        pokemons.get(j).getName().compareTo(pivo.getName()) > 0)) {
+                    j--;
+                }
+                if (i <= j) {
+                    Pokemon temp = pokemons.get(i);
+                    pokemons.set(i, pokemons.get(j));
+                    pokemons.set(j, temp);
+                    i++;
+                    j--;
+                }
+            }
+            
+            if (esq < j) quickSort(esq, j, pokemons);
+            if (10 < dir) quickSort(i, dir, pokemons);
+        }
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -652,8 +709,10 @@ public class Pokedex {
         // ordenacaoPorInsercao(listaPokemons);
         // ordenacaoPorHeapSort(listaPokemons);
         // ordenacaoPorCountingSort(listaPokemons);
-        ordenacaoPorMergeSort(listaPokemons);        
-        
+        // ordenacaoPorMergeSort(listaPokemons);        
+        // ordenacaoParcialPorSelecao(listaPokemons);
+        ordenacaoParcialPorQuickSort(listaPokemons);        
+
         // for (Pokemon pokemon : listaPokemons) {
         //     pokemon.imprimir(pokemon);
         // }

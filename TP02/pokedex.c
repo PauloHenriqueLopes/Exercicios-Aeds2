@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <time.h>
 
 char ids[801][5];
 int numIds = 0;
+int numNomes = 0;
 
 typedef struct {
     char id[8];
@@ -55,6 +58,11 @@ char * replace(
     }
     return returned;
   }
+}
+
+void limparBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
 void imprimir(Pokemon pokemon) {
@@ -155,9 +163,73 @@ Pokemon parsePokemon(char *linha) {
     return pokemon;
 }
 
+void lerNomes(char listaNomes[][100]) {
+    char nome[100];
+    limparBuffer();
+    do {
+        fgets(nome, sizeof(nome), stdin);
+        nome[strcspn(nome, "\n")] = 0;
+        if (strcmp(nome, "FIM") != 0) {
+            strcpy(listaNomes[numNomes], nome);
+            numNomes++;
+        }
+    } while (strcmp(nome, "FIM") != 0);
+}   
+
+void odernaPorNome(Pokemon* pokemons) {
+    for(int i = 0; i < (numIds - 1); i++) {
+        int menor = i;
+        for(int  j = (i + 1);  j < numIds; j++) {
+            if(strcmp(pokemons[menor].name, pokemons[j].name) > 0) {
+                menor = j;
+            }
+        }
+        Pokemon temp = pokemons[i];
+        pokemons[i] = pokemons[menor];
+        pokemons[menor] = temp;
+    }
+}
+
+void pesquisaBinaria(Pokemon* listaPokemon, char listaNomes[][100]) {
+    odernaPorNome(listaPokemon);  
+    int comparacoes = 0;
+    clock_t start = clock();
+
+    FILE *logFile = fopen("829031_binaria.txt", "w");
+    if (!logFile) {
+        printf("Erro ao abrir o arquivo de log.\n");
+        return;
+    }
+
+    for(int i = 0; i < numNomes; i++) {
+        bool resp = false;
+        int esq = 0, dir = (numIds - 1);
+
+        while (esq <= dir) {
+            int meio = (esq + dir) / 2;
+            comparacoes++;
+            int cmp = strcmp(listaPokemon[meio].name, listaNomes[i]); 
+
+            if(cmp == 0) { 
+                resp = true;
+                break;
+            } else if(cmp < 0) {
+                esq = meio + 1;
+            } else {
+                dir = meio - 1;
+            }
+        }
+        printf("%s\n", resp ? "SIM" : "NAO");
+    }
+        clock_t end = clock();
+        double tempo_execucao = (double)(end - start) / CLOCKS_PER_SEC;
+
+        fprintf(logFile, "829031\t%f\t%d\n", tempo_execucao, comparacoes);
+    fclose(logFile);
+}
 
 int main() {
-    FILE *file = fopen("/home/paulo/Documentos/Programação/Exercicios-Aeds2/TP02/pokemon.csv", "r");
+    FILE *file = fopen("/tmp/pokemon.csv", "r");
 
     if (!file) {
         printf("Não foi possível abrir o arquivo.");
@@ -168,6 +240,9 @@ int main() {
     Pokemon listaPokemon[802];
 
     ler();
+
+    char listaNomes[802][100];
+    lerNomes(listaNomes);
 
     while (fgets(linha, sizeof(linha), file) != NULL) {
         linha[strcspn(linha, "\n")] = '\0';
@@ -189,9 +264,12 @@ int main() {
 
     fclose(file);
 
-    for (int j = 0; j < numIds; j++) {
-        imprimir(listaPokemon[j]);
-    }
+    //metodos de Ordenacao/Pesquisa
+    pesquisaBinaria(listaPokemon, listaNomes);
+
+    // for (int j = 0; j < numIds; j++) {
+    //     imprimir(listaPokemon[j]);
+    // }
 
     return 0;
 }
