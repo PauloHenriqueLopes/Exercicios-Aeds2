@@ -1,0 +1,9 @@
+Array: 100, Tempo: 0,000118, Tipo: Desordenado
+Array: 1000, Tempo: 0,001422, Tipo: Desordenado
+Array: 10000, Tempo: 0,007213, Tipo: Desordenado
+Array: 100, Tempo: 0,000275, Tipo: Ordenado
+Array: 1000, Tempo: 0,007928, Tipo: Ordenado
+Array: 10000, Tempo: 0,077145, Tipo: Ordenado
+Array: 100, Tempo: 0,000219, Tipo: Parcialmente Ordenado
+Array: 1000, Tempo: 0,000527, Tipo: Parcialmente Ordenado
+Array: 10000, Tempo: 0,000705, Tipo: Parcialmente Ordenado

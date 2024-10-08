@@ -22,42 +22,34 @@ typedef struct {
     char captureDate[15];
 } Pokemon;
 
-char * replace(
-    char const * const original, 
-    char const * const pattern, 
-    char const * const replacement
-) {
-  size_t const replen = strlen(replacement);
-  size_t const patlen = strlen(pattern);
-  size_t const orilen = strlen(original);
+char * replace(char const * const original, char const * const pattern, char const * const replacement) {
+    size_t const replen = strlen(replacement);
+    size_t const patlen = strlen(pattern);
+    size_t const orilen = strlen(original);
 
-  size_t patcnt = 0;
-  const char * oriptr;
-  const char * patloc;
+    size_t patcnt = 0;
+    const char * oriptr;
+    const char * patloc;
 
-  for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen) {
-    patcnt++;
-  }
+    for (oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen) {
+        patcnt++;
+    }
 
-  {
     size_t const retlen = orilen + patcnt * (replen - patlen);
-    char * const returned = (char *) malloc( sizeof(char) * (retlen + 1) );
+    char * const returned = (char *) malloc(sizeof(char) * (retlen + 1));
 
-    if (returned != NULL)
-    {
-      char * retptr = returned;
-      for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
-      {
-        size_t const skplen = patloc - oriptr;
-        strncpy(retptr, oriptr, skplen);
-        retptr += skplen;
-        strncpy(retptr, replacement, replen);
-        retptr += replen;
-      }
-      strcpy(retptr, oriptr);
+    if (returned != NULL) {
+        char * retptr = returned;
+        for (oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen) {
+            size_t const skplen = patloc - oriptr;
+            strncpy(retptr, oriptr, skplen);
+            retptr += skplen;
+            strncpy(retptr, replacement, replen);
+            retptr += replen;
+        }
+        strcpy(retptr, oriptr);
     }
     return returned;
-  }
 }
 
 void limparBuffer() {
@@ -228,6 +220,309 @@ void pesquisaBinaria(Pokemon* listaPokemon, char listaNomes[][100]) {
     fclose(logFile);
 }
 
+void ordenacaoPorSelecaoRecursiva(Pokemon* listaPokemon, int i, int* comparacoes, int* movimentacoes) {
+    if (i >= numIds) {
+        return;
+    }
+
+    int menor = i;
+    for (int j = i + 1; j < numIds; j++) {
+        (*comparacoes)++;
+        if (strcmp(listaPokemon[j].name, listaPokemon[menor].name) < 0) {
+            menor = j;
+        }
+    }
+
+    if (menor != i) {
+        Pokemon temp = listaPokemon[i];
+        listaPokemon[i] = listaPokemon[menor];
+        listaPokemon[menor] = temp;
+        (*movimentacoes) += 3;
+    }
+
+    ordenacaoPorSelecaoRecursiva(listaPokemon, i + 1, comparacoes, movimentacoes);
+}
+
+void insercaoPorCor(Pokemon* listaPokemon, int cor, int h, int* comparacoes, int* movimentacoes) {
+    for (int i = (h + cor); i < numIds; i += h) {
+        Pokemon temp = listaPokemon[i];
+        int j = (i - h);
+        float tempWeight = atof(temp.weight);
+
+        while (j >= 0) {
+            float currentWeight = atof(listaPokemon[j].weight);
+            (*comparacoes)++;
+            if (currentWeight > tempWeight || 
+                (currentWeight == tempWeight && strcmp(listaPokemon[j].name, temp.name) > 0)) {
+                listaPokemon[j + h] = listaPokemon[j];
+                j -= h;
+                (*movimentacoes)++;
+            } else {
+                break;
+            }
+        }
+        listaPokemon[j + h] = temp;
+        (*movimentacoes)++;
+    }
+}
+
+void ordenacaoPorShellSort(Pokemon* listaPokemon, int* comparacoes, int* movimentacoes) {
+    int h = 1;
+
+    while (h < numIds) {
+        h = h * 3 + 1;
+    }
+
+    while (h > 1) {
+        h /= 3;
+        for (int cor = 0; cor < h; cor++) {
+            insercaoPorCor(listaPokemon, cor, h, comparacoes, movimentacoes);
+        }
+    }
+}
+
+void ordenacaoPorQuickSort(Pokemon* listaPokemon) {
+    int comparacoes = 0;
+    int movimentacoes = 0;
+    clock_t start = clock();
+
+    quickSortRec(listaPokemon, 0, (numIds - 1), &comparacoes, &movimentacoes);
+
+    clock_t end = clock();
+    double tempo_execucao = (double)(end - start) / CLOCKS_PER_SEC;
+
+    FILE *logFile = fopen("829031_quicksort.txt", "w");
+    if (logFile) {
+        fprintf(logFile, "829031\t%d\t%d\t%f\n", comparacoes, movimentacoes, tempo_execucao);
+        fclose(logFile);
+    }
+}
+
+void quickSortRec(Pokemon* listaPokemon, int esq, int dir, int* comparacoes, int* movimentacoes) {
+    int i = esq, j = dir;
+    Pokemon pivo = listaPokemon[(esq + dir) / 2];
+
+    while(i <= j) {
+        while(atoi(listaPokemon[i].generation) < atoi(pivo.generation) || 
+              (atoi(listaPokemon[i].generation) == atoi(pivo.generation) && strcmp(listaPokemon[i].name, pivo.name) < 0)) {
+            i++;
+            (*comparacoes)++;
+        }
+        while(atoi(listaPokemon[j].generation) > atoi(pivo.generation) || 
+              (atoi(listaPokemon[j].generation) == atoi(pivo.generation) && strcmp(listaPokemon[j].name, pivo.name) > 0)) {
+            j--;
+            (*comparacoes)++;
+        }
+        if(i <= j) {
+            Pokemon temp = listaPokemon[i];
+            listaPokemon[i] = listaPokemon[j];
+            listaPokemon[j] = temp;
+            (*movimentacoes) += 3;
+            i++;
+            j--;
+        }
+    }
+    if (esq < j) quickSortRec(listaPokemon, esq, j, comparacoes, movimentacoes);
+    if (i < dir) quickSortRec(listaPokemon, i, dir, comparacoes, movimentacoes);
+}
+
+void ordenacaoPorBolha(Pokemon* listaPokemon) {
+    int comparacoes = 0;
+    int movimentacoes = 0;
+    clock_t start = clock();
+
+    int i, j;
+    for(i = (numIds - 1); i > 0; i--) {
+        for(j = 0; j < i; j++) {
+            comparacoes++;
+            if(atoi(listaPokemon[j].id) > atoi(listaPokemon[j + 1].id)) {
+                Pokemon temp = listaPokemon[j];
+                listaPokemon[j] = listaPokemon[j + 1];
+                listaPokemon[j + 1] = temp;
+                movimentacoes += 3;
+            }
+        }
+    }
+
+    clock_t end = clock();
+    double tempo_execucao = (double)(end - start) / CLOCKS_PER_SEC;
+
+    FILE *logFile = fopen("829031_bolha.txt", "w");
+    if (logFile) {
+        fprintf(logFile, "829031\t%d\t%d\t%f\n", comparacoes, movimentacoes, tempo_execucao);
+        fclose(logFile);
+    }
+}
+
+void countingSort(Pokemon* listaPokemon, int n, int exp, int* comparacoes, int* movimentacoes) {
+    Pokemon output[n];
+    int count[256] = {0};
+
+    for (int i = 0; i < n; i++) {
+        int index = (exp < strlen(listaPokemon[i].abilities)) ? listaPokemon[i].abilities[exp] : 0;
+        count[index]++;
+        (*movimentacoes)++;
+    }
+
+    for (int i = 1; i < 256; i++) {
+        count[i] += count[i - 1];
+        (*comparacoes)++;
+    }
+
+    for (int i = n - 1; i >= 0; i--) {
+        int index = (exp < strlen(listaPokemon[i].abilities)) ? listaPokemon[i].abilities[exp] : 0;
+        output[count[index] - 1] = listaPokemon[i];
+        count[index]--;
+        (*movimentacoes)++; 
+    }
+
+    for (int i = 0; i < n; i++) {
+        listaPokemon[i] = output[i];
+        (*movimentacoes)++; 
+    }
+}
+
+void ordenacaoPorRadixSort(Pokemon* listaPokemon) {
+    int comparacoes = 0;
+    int movimentacoes = 0;
+    clock_t start = clock();
+
+    int n = numIds;
+    int maxLength = 0;
+    for (int i = 0; i < n; i++) {
+        if (strlen(listaPokemon[i].abilities) > maxLength) {
+            maxLength = strlen(listaPokemon[i].abilities);
+        }
+    }
+
+    for (int exp = maxLength - 1; exp >= 0; exp--) {
+        countingSort(listaPokemon, n, exp, &comparacoes, &movimentacoes);
+    }
+
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            (comparacoes)++;
+            if (strcmp(listaPokemon[i].abilities, listaPokemon[j].abilities) == 0 && 
+                strcmp(listaPokemon[i].name, listaPokemon[j].name) > 0) {
+                Pokemon temp = listaPokemon[i];
+                listaPokemon[i] = listaPokemon[j];
+                listaPokemon[j] = temp;
+                movimentacoes += 3;
+            }
+        }
+    }
+
+    clock_t end = clock();
+    double tempo_execucao = (double)(end - start) / CLOCKS_PER_SEC;
+
+    FILE *logFile = fopen("829031_radixsort.txt", "w");
+    if (logFile) {
+        fprintf(logFile, "829031\t%d\t%d\t%f\n", comparacoes, movimentacoes, tempo_execucao);
+        fclose(logFile);
+    }
+}
+
+int comparaDatas(const char* data1, const char* data2) {
+    int dia1 = atoi(data1);
+    int mes1 = atoi(data1 + 3);
+    int ano1 = atoi(data1 + 6);
+
+    int dia2 = atoi(data2);
+    int mes2 = atoi(data2 + 3);
+    int ano2 = atoi(data2 + 6);
+
+    if (ano1 != ano2) {
+        return ano1 - ano2; 
+    }
+    if (mes1 != mes2) {
+        return mes1 - mes2;
+    }
+    return dia1 - dia2;
+}
+
+void ordenacaoParcialPorInsercao(Pokemon* listaPokemon) {
+    int limite = 10;
+    for (int i = 1; i < numIds; i++) {
+        Pokemon temp = listaPokemon[i];
+        int j = (i - 1);
+
+        while (j >= 0 && comparaDatas(listaPokemon[j].captureDate, temp.captureDate) > 0) {
+            listaPokemon[j + 1] = listaPokemon[j];
+            j--;
+        }
+        listaPokemon[j + 1] = temp;
+    }
+
+    for (int j = 0; j < limite; j++) {
+        imprimir(listaPokemon[j]);
+    }
+}
+
+void construir(Pokemon* listaPokemons, int tamHeap) {
+    for (int i = tamHeap; i > 1 && 
+        (atof(listaPokemons[i].height) > atof(listaPokemons[i/2].height) || 
+         (atof(listaPokemons[i].height) == atof(listaPokemons[i/2].height) && strcmp(listaPokemons[i].name, listaPokemons[i/2].name) > 0)); 
+         i /= 2) {
+        Pokemon temporario = listaPokemons[i];
+        listaPokemons[i] = listaPokemons[i / 2];
+        listaPokemons[i / 2] = temporario;
+    }
+}
+
+int getMaiorFilho(Pokemon* listaPokemons, int i, int tamHeap) {
+    int filho;
+    if (2 * i + 1 <= tamHeap && 
+        (atof(listaPokemons[2 * i].height) < atof(listaPokemons[2 * i + 1].height) || 
+         (atof(listaPokemons[2 * i].height) == atof(listaPokemons[2 * i + 1].height) && strcmp(listaPokemons[2 * i].name, listaPokemons[2 * i + 1].name) < 0))) {
+        filho = 2 * i + 1;
+    } else {
+        filho = 2 * i;
+    }
+    return filho;
+}
+
+void reconstruir(Pokemon* listaPokemon, int tamHeap) {
+    int i = 1;
+    while (i <= (tamHeap / 2)) {
+        int filho = getMaiorFilho(listaPokemon, i, tamHeap);
+        if (atof(listaPokemon[i].height) < atof(listaPokemon[filho].height) || 
+            (atof(listaPokemon[i].height) == atof(listaPokemon[filho].height) && strcmp(listaPokemon[i].name, listaPokemon[filho].name) < 0)) {
+            Pokemon temporario = listaPokemon[i];
+            listaPokemon[i] = listaPokemon[filho];
+            listaPokemon[filho] = temporario;
+            i = filho;
+        } else {
+            i = tamHeap;
+        }
+    }
+}
+
+void ordencacaoParcialPorHeapSort(Pokemon* listaPokemon) {
+    Pokemon temp[10]; 
+
+    for (int i = 0; i < 10 && i < numIds; i++) {
+        temp[i] = listaPokemon[i];
+    }
+
+    for (int i = 10; i >= 1; i--) {
+        construir(temp, i);
+    }
+
+    for(int i = 10; i < numIds; i++) {
+        if (atof(listaPokemon[i].height) < atof(temp[0].height) || 
+            (atof(listaPokemon[i].height) == atof(temp[0].height) && strcmp(listaPokemon[i].name, temp[0].name) < 0)) {
+                Pokemon temporario = temp[0];
+                temp[0] = listaPokemon[i];
+                listaPokemon[i] = temporario;
+                reconstruir(temp, 10);
+            }
+    }
+
+    for (int i = 0; i < 10; i++) {
+        imprimir(temp[i]);
+    }
+}
+
 int main() {
     FILE *file = fopen("/tmp/pokemon.csv", "r");
 
@@ -240,9 +535,8 @@ int main() {
     Pokemon listaPokemon[802];
 
     ler();
-
-    char listaNomes[802][100];
-    lerNomes(listaNomes);
+    // char listaNomes[802][100];
+    // lerNomes(listaNomes);
 
     while (fgets(linha, sizeof(linha), file) != NULL) {
         linha[strcspn(linha, "\n")] = '\0';
@@ -265,11 +559,59 @@ int main() {
     fclose(file);
 
     //metodos de Ordenacao/Pesquisa
-    pesquisaBinaria(listaPokemon, listaNomes);
+    // pesquisaBinaria(listaPokemon, listaNomes);
 
-    // for (int j = 0; j < numIds; j++) {
-    //     imprimir(listaPokemon[j]);
+    //Sequencial Recursiva:
+    // int comparacoes = 0;
+    // int movimentacoes = 0;
+    // clock_t start = clock();
+
+    // ordenacaoPorSelecaoRecursiva(listaPokemon, 0, &comparacoes, &movimentacoes);
+
+    // clock_t end = clock();
+    // double tempo_execucao = (double)(end - start) / CLOCKS_PER_SEC;
+
+    // FILE *logFile = fopen("829031_selecaoRecursiva.txt", "w");
+    // if (logFile) {
+    //     fprintf(logFile, "829031\t%d\t%d\t%f\n", comparacoes, movimentacoes, tempo_execucao);
+    //     fclose(logFile);
     // }
+
+    //shell Sort:
+    // int comparacoes = 0;
+    // int movimentacoes = 0;
+    // clock_t start = clock();
+
+    // ordenacaoPorShellSort(listaPokemon, &comparacoes, &movimentacoes);
+
+    // clock_t end = clock();
+    // double tempo_execucao = (double)(end - start) / CLOCKS_PER_SEC;
+
+    // FILE *logFile = fopen("829031_shellsort.txt", "w");
+    // if (logFile) {
+    //     fprintf(logFile, "829031\t%d\t%d\t%f\n", comparacoes, movimentacoes, tempo_execucao);
+    //     fclose(logFile);
+    // }
+
+
+    //Quick Sort:
+    // ordenacaoPorQuickSort(listaPokemon);
+
+    //Bolha:
+    // ordenacaoPorBolha(listaPokemon);
+
+    //Radix Sort:
+    // ordenacaoPorRadixSort(listaPokemon);
+
+    //Ordenacao Parcial por Insercao:
+    // ordenacaoParcialPorInsercao(listaPokemon);
+
+    //Ordenacao Parcial por HeapSort:
+    // ordencacaoParcialPorHeapSort(listaPokemon);
+
+    for (int j = 0; j < numIds; j++) {
+        imprimir(listaPokemon[j]);
+    }
 
     return 0;
 }
