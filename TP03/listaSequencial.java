@@ -295,20 +295,15 @@ public class listaSequencial {
             int gen = Integer.parseInt(parts[1].trim());
             String name = parts[2].trim();
             String description = parts[3].trim();
-    
-            // Remover colchetes e dividir tipos por vírgulas
-            String type1 = parts[4].trim().replaceAll("\\[|\\]", "");
-            String type2 = parts[5].trim().replaceAll("\\[|\\]", "");
+            String type1 = parts[4].trim();
+            String type2 = parts[5].trim();
             String[] types = type2.isEmpty() ? new String[]{type1} : new String[]{type1, type2};
-    
-            // Remover colchetes e dividir habilidades por vírgulas
-            String habilidadesString = parts[6].replace(";", ",").replaceAll("\\[|\\]", "").trim();
-            String[] habilidades = habilidadesString.split(",");
-    
+            String habilidadesString = parts[6].replace(".", ",").replace("[", "").replace("]", "").trim();
+            String[] habilidades = habilidadesString.split(",");  
             Double peso = parts[7].trim().equals("0") ? 0.0 : Double.parseDouble(parts[7].trim());
             Double altura = parts[8].trim().equals("0") ? 0.0 : Double.parseDouble(parts[8].trim());
             int captura = Integer.parseInt(parts[9].trim());
-            Boolean lendario = parts[10].trim().equals("1");  // Ajuste para Boolean
+            Boolean lendario = parts[10].trim().equals("1");
             String data = parts[11].trim();
     
             return new Pokemon(id, gen, name, description, types, habilidades, peso, altura, captura, lendario, data);
@@ -339,20 +334,19 @@ public class listaSequencial {
             String line = reader.readLine();
 
             while ((line = reader.readLine()) != null) {
-                line = line.replace(", ", ";");
-                line = line.replace(",,,", ", , ,");
+                line = line.replace("\",,,", "\", , ,");
                 line = line.replace(",,", ", ,");
                 line = line.replace("\"", "");
+                line = line.replace(", ", ".");
                 line = line.replace(",", ";");
+                line = line.replace(".;[", "[; ;");
+                line = line.replace("]..;", "];0.0;0.0;");
+                line = line.replace("].; ;", "];0.0;0.0;");
 
                 String[] parts = line.split(";");
 
-                for(String ebert : parts) {
-                    System.out.println(ebert);
-                }
-
                 Pokemon novoPokemon = parsePokemon(parts);
-                if(requestedIds.contains(novoPokemon.getId())) {
+                if(requestedIds.contains(String.valueOf(novoPokemon.getId()))) {
                     lista.inserirFim(novoPokemon);
                 }
             }
@@ -378,10 +372,14 @@ public class listaSequencial {
                     String line;
 
                     while((line = reader.readLine()) != null) {
-                        line = line.replace(", ", ";");
-                        line = line.replace(",,,", ", , ,");
-                        line = line.replace(",,", ", ");
+                        line = line.replace("\",,,", "\", , ,");
+                        line = line.replace(",,", ", ,");
                         line = line.replace("\"", "");
+                        line = line.replace(", ", ".");
+                        line = line.replace(",", ";");
+                        line = line.replace(".;[", "[; ;");
+                        line = line.replace("]..;", "];0.0;0.0;");
+                        line = line.replace("].; ;", "];0.0;0.0;");
 
                         String[] parts = line.split(";");
 
@@ -413,10 +411,14 @@ public class listaSequencial {
                     String line;
 
                     while((line = reader.readLine()) != null) {
-                        line = line.replace(", ", ";");
-                        line = line.replace(",,,", ", , ,");
-                        line = line.replace(",,", ", ");
+                        line = line.replace("\",,,", "\", , ,");
+                        line = line.replace(",,", ", ,");
                         line = line.replace("\"", "");
+                        line = line.replace(", ", ".");
+                        line = line.replace(",", ";");
+                        line = line.replace(".;[", "[; ;");
+                        line = line.replace("]..;", "];0.0;0.0;");
+                        line = line.replace("].; ;", "];0.0;0.0;");
 
                         String[] parts = line.split(";");
 
@@ -449,10 +451,14 @@ public class listaSequencial {
                     String line;
 
                     while((line = reader.readLine()) != null) {
-                        line = line.replace(", ", ";");
-                        line = line.replace(",,,", ", , ,");
-                        line = line.replace(",,", ", ");
+                        line = line.replace("\",,,", "\", , ,");
+                        line = line.replace(",,", ", ,");
                         line = line.replace("\"", "");
+                        line = line.replace(", ", ".");
+                        line = line.replace(",", ";");
+                        line = line.replace(".;[", "[; ;");
+                        line = line.replace("]..;", "];0.0;0.0;");
+                        line = line.replace("].; ;", "];0.0;0.0;");
 
                         String[] parts = line.split(";");
 
