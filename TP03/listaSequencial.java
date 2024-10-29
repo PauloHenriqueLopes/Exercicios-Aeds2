@@ -132,11 +132,13 @@ class Pokemon {
     
         // Imprimir tipos
         String[] tipos = pokemon.getTypes();
-        System.out.print(Arrays.toString(tipos) + " - ");
+        String tiposFormatados = Arrays.toString(tipos).replace("[", "").replace("]", "");
+        System.out.print("[" + tiposFormatados + "] - ");
     
         // Imprimir habilidades
         String[] habilidades = pokemon.getAbilities();
-        System.out.print(Arrays.toString(habilidades) + " - ");
+        String habilidadesFormatadas = Arrays.toString(habilidades).replace("[", "").replace("]", "");
+        System.out.print("[" + habilidadesFormatadas + "] - ");
     
         // Imprimir outros atributos
         System.out.print(pokemon.getWeight() + "kg - " + pokemon.getHeight() + "m - " +
@@ -358,9 +360,12 @@ public class listaSequencial {
         int n = scanner.nextInt();
         scanner.nextLine();
 
+        
         for(int i = 0; i < n; i++) {
             String command = scanner.next();
-
+            
+            lista.mostrar();
+            
             if(command.equals("II")) {
                 String idProcurado = scanner.next();
                 scanner.nextLine();
@@ -486,7 +491,7 @@ public class listaSequencial {
             } else if (command.equals("RI")) {
                 try {
                     Pokemon removido = lista.removerInicio();
-                    System.out.println("(R)" + removido.getName());
+                    System.out.println("(R) " + removido.getName());
                 } catch (Exception e) {
                     System.err.println("Erro ao remover do início: " + e.getMessage());
                 }
@@ -495,14 +500,14 @@ public class listaSequencial {
                 scanner.nextLine(); // Para consumir a nova linha
                 try {
                     Pokemon removido = lista.remover(pos);
-                    System.out.println("(R)" + removido.getName());
+                    System.out.println("(R) " + removido.getName());
                 } catch (Exception e) {
                     System.err.println("Erro ao remover na posição " + pos + ": " + e.getMessage());
                 }
             } else if (command.equals("RF")) {
                 try {
                     Pokemon removido = lista.removerFim();
-                    System.out.println("(R)" + removido.getName());
+                    System.out.println("(R) " + removido.getName());
                 } catch (Exception e) {
                     System.err.println("Erro ao remover do fim: " + e.getMessage());
                 }
