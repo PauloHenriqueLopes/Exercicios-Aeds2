@@ -141,6 +141,7 @@ Pokemon parsePokemon(char *linha) {
             default:
                 break;
         }
+        printf("%s\n", token);
         token = strtok(NULL, ",");
         contador++;
     }
@@ -524,7 +525,7 @@ void ordencacaoParcialPorHeapSort(Pokemon* listaPokemon) {
 }
 
 int main() {
-    FILE *file = fopen("/tmp/pokemon.csv", "r");
+    FILE *file = fopen("/home/paulo/Documents/programacao/Exercicios-Aeds2/TP02/pokemon.csv", "r");
 
     if (!file) {
         printf("Não foi possível abrir o arquivo.");

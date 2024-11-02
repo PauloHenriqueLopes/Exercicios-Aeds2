@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Tp01Q10 {
+public class TP01Q10 {
     public static Boolean palindromoRecursivo(String string, int passo) {
         int tam = string.length();
         

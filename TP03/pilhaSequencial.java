@@ -2,6 +2,7 @@ import java.util.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+
 class Pokemon {
     private int id;
     private int generation;
@@ -184,48 +185,25 @@ class Celula {
     }
 }
 
-class listaPokemon {
+class pilhaPokemon {
     private Celula primeiro;
     private Celula ultimo;
 
-    public listaPokemon() {
+    public pilhaPokemon() {
         primeiro = new Celula(null);
         ultimo = primeiro;
     }
 
-    public void inserirInicio(Pokemon pokemon) {
+    public void empilhar(Pokemon pokemon) {
         Celula nova = new Celula(pokemon);
         nova.prox = primeiro.prox;
         primeiro.prox = nova;
-        if (primeiro == ultimo) {
+        if(primeiro == ultimo) {
             ultimo = nova;
         }
     }
 
-    public void inserir(Pokemon pokemon, int pos) throws Exception {
-        int tamanho = tamanho();
-        if (pos < 0 || pos > tamanho) {
-            throw new Exception("Erro ao inserir posição (" + pos + " / tamanho = " + tamanho + ") inválida!");
-        } else if (pos == 0) {
-            inserirInicio(pokemon);
-        } else if (pos == tamanho) {
-            inserirFim(pokemon);
-        } else {
-            Celula i = primeiro;
-            for (int j = 0; j < pos; j++, i = i.prox);
-            Celula nova = new Celula(pokemon);   
-            nova.prox = i.prox;
-            i.prox = nova;
-        }
-    }
-
-    public void inserirFim(Pokemon pokemon) {
-        Celula nova = new Celula(pokemon);
-        ultimo.prox = nova;
-        ultimo = nova;
-    }
-
-    public Pokemon removerInicio() throws Exception {
+    public void desempilhar() throws Exception {
         if (primeiro == ultimo) {
             throw new Exception("Erro ao remover (vazia)!");
         }
@@ -235,48 +213,20 @@ class listaPokemon {
             ultimo = primeiro;
         }
         tmp.prox = null;
-        return tmp.pokemon;
-    }
-
-    public Pokemon remover(int pos) throws Exception {
-        int tamanho = tamanho();
-        if (primeiro == ultimo) {
-            throw new Exception("Erro ao remover (vazia)!");
-        } else if (pos < 0 || pos >= tamanho) {
-            throw new Exception("Erro ao remover (posicao " + pos + " / " + tamanho + " invalida!");
-        } else if (pos == 0) {
-            return removerInicio();
-        } else {
-            Celula i = primeiro;
-            for (int j = 0; j < pos; j++, i = i.prox);
-            Celula tmp = i.prox;
-            i.prox = tmp.prox;
-            if (tmp == ultimo) {
-                ultimo = i;
-            }
-            tmp.prox = null;
-            return tmp.pokemon;
-        }
-    }
-
-    public Pokemon removerFim() throws Exception {
-        if (primeiro == ultimo) {
-            throw new Exception("Erro ao remover (vazia)!");
-        }
-        Celula i;
-        for (i = primeiro; i.prox != ultimo; i = i.prox);
-        Celula tmp = ultimo;
-        ultimo = i;
-        i.prox = null;
-        return tmp.pokemon;
+        System.out.println("(R) " + tmp.pokemon.getName());
     }
 
     public void mostrar() {
-        int pos = 0;
-        for(Celula i = primeiro.prox; i != null; i = i.prox) {
+        int pos = tamanho();
+        Celula i = primeiro;
+        caminha(pos, i);
+    }
+
+    private void caminha(int pos, Celula i) {
+        if(i.prox != null) caminha(pos - 1, i.prox);
+        if (i.pokemon != null) {
             System.out.print("[" + pos + "] ");
             i.pokemon.imprimir(i.pokemon);
-            pos++;
         }
     }
 
@@ -287,7 +237,7 @@ class listaPokemon {
     }
 }
 
-public class listaSequencial {
+public class pilhaSequencial {
     public static Pokemon parsePokemon(String[] parts) {
         try {
             int id = Integer.parseInt(parts[0].trim());
@@ -317,7 +267,7 @@ public class listaSequencial {
         Scanner scanner = new Scanner(System.in);
         List<String> requestedIds = new ArrayList<>();
 
-        listaPokemon lista = new listaPokemon();
+       pilhaPokemon pilha = new pilhaPokemon();
         List<Pokemon> listaPokemon = new ArrayList<>();
 
         while (true) {
@@ -356,7 +306,7 @@ public class listaSequencial {
         for(int i = 0; i < requestedIds.size(); i++) {
             for(Pokemon j : listaPokemon) {
                 if(Integer.parseInt(requestedIds.get(i)) == j.getId()) {
-                    lista.inserirFim(j);
+                    pilha.empilhar(j);
                 }
             }
         }
@@ -368,72 +318,27 @@ public class listaSequencial {
             String command = scanner.next();
             int idProcurado;
 
-            if(command.equals("II")) {
+            if(command.equals("I")) {
                 idProcurado = scanner.nextInt();
                 scanner.nextLine();
                 
                 for(Pokemon pokemon : listaPokemon) {
                     if(pokemon.getId() == idProcurado) {
-                        lista.inserirInicio(pokemon);
+                        pilha.empilhar(pokemon);
                         break;
                     }
                 }
-            } else if(command.equals("IF")) {
-                idProcurado = scanner.nextInt();
-                scanner.nextLine();
-        
-                for(Pokemon pokemon : listaPokemon) {
-                    if(pokemon.getId() == idProcurado) {
-                        lista.inserirFim(pokemon);
-                        break;
-                    }
-                }
-            } else if(command.equals("I*")) {
-                int pos = scanner.nextInt();
-                idProcurado = scanner.nextInt();
-                scanner.nextLine();
-                
-                boolean encontrado = false;
-                for(Pokemon pokemon : listaPokemon) {
-                    if(pokemon.getId() == idProcurado) {
-                        try {
-                            lista.inserir(pokemon, pos); 
-                            encontrado = true;
-                        } catch (Exception e) {
-                            System.err.println("Erro ao inserir na posição " + pos + ": " + e.getMessage());
-                        }
-                        break;
-                    }
-                }
-                if (!encontrado) {
-                    System.out.println("Pokémon com ID " + idProcurado + " não encontrado.");
-                }
-            } else if (command.equals("RI")) {
+            } else if (command.equals("R")) {
                 try {
-                    Pokemon removido = lista.removerInicio();
-                    System.out.println("(R) " + removido.getName());
+                    pilha.desempilhar();
                 } catch (Exception e) {
-                    System.err.println("Erro ao remover do início: " + e.getMessage());
+                    System.out.println(e.getMessage());
                 }
-            } else if (command.equals("R*")) {
-                int pos = scanner.nextInt();
-                scanner.nextLine();
-                try {
-                    Pokemon removido = lista.remover(pos);
-                    System.out.println("(R) " + removido.getName());
-                } catch (Exception e) {
-                    System.err.println("Erro ao remover na posição " + pos + ": " + e.getMessage());
-                }
-            } else if (command.equals("RF")) {
-                try {
-                    Pokemon removido = lista.removerFim();
-                    System.out.println("(R) " + removido.getName());
-                } catch (Exception e) {
-                    System.err.println("Erro ao remover do fim: " + e.getMessage());
-                }
+            } else {
+                System.out.println("Comando desconhecido: " + command);
             }
         }
         scanner.close();
-        lista.mostrar();
+        pilha.mostrar();
     }
 }
