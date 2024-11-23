@@ -22,68 +22,44 @@ typedef struct {
     char captureDate[15];
 } Pokemon;
 
-typedef struct Celula {
-    Pokemon pokemon;
-    struct Celula* prox; 
-} Celula;
+Pokemon array[5+1];
+int primeiro, ultimo;
+int media = 0;
 
-typedef struct {
-    Celula* primeiro;
-    Celula* ultimo;
-    int tam;
-} FilaCircular;
-
-
-void start(FilaCircular* pilha) {
-    pilha -> primeiro = NULL;
-    pilha -> ultimo = NULL;
-    pilha -> tam = 0;
+void start() {
+    primeiro = ultimo = 0;
 }
 
-Celula* novaCelula(Pokemon pokemon) {
-    Celula* nova = (Celula*)malloc(sizeof(Celula));
-    if(nova == NULL) {
-        printf("Falha na alocacao da celula");
-        exit(1);
+void inserir(Pokemon pokemon) {
+    if(((ultimo + 1) % 5) == primeiro) {
+        Pokemon remover = array[primeiro];
+        primeiro = ((primeiro + 1) % 5);
+        media -= atoi(remover.captureRate);
     }
-    nova -> pokemon = pokemon;
-    nova -> prox = NULL;
-    return nova;
+    array[ultimo] = pokemon;
+    media =+ atoi(pokemon.captureRate);
+    printf("Média: %d\n", media/(ultimo+1));
+    ultimo = ((ultimo + 1) % 5);
 }
 
-void empilhar(FilaCircular* fila, Pokemon pokemon) {
-    Celula* nova = novaCelula(pokemon);
-    nova->prox = fila->primeiro;
-    fila->primeiro = nova;
-    if(fila->ultimo == NULL) {
-        fila->ultimo = nova;
-    }
-    fila->tam++;
-}
-
-void desempilhar(FilaCircular* fila) {
-    if(fila->primeiro == NULL) {
-        printf("Erro, fila vazia");
+void remover() {
+    if(primeiro == ultimo) {
         exit(1);
     }
 
-    Celula* removida = fila->primeiro;
-    printf("(R) %s\n", removida->pokemon.name);
-    free(removida);
-    fila->primeiro = fila->primeiro->prox;
-    fila->tam--;
+    Pokemon remover = array[primeiro];
+    primeiro = ((primeiro + 1) % 5);
+    media -= atoi(remover.captureRate);
+    printf("(R) %s\n", remover.name);
 }
 
-
-void mostrar(FilaCircular* pilha, int pos) {
-    Celula *j = pilha->primeiro;
-    caminhar(j, pos);
-}
-
-void caminhar(Celula* j, int pos) {
-    if(j->prox != NULL) caminhar(j->prox, --pos);
-    printf("[%d] ", pos);
-    imprimir(j->pokemon);
+void mostrar() {
+    int i = primeiro;
+    while(i != ultimo) {
+        printf("[%d]", i);
+        imprimir(array[i]);
+        i = ((i+1) % 5);
+    }
 }
 
 char * replace(char const * const original, char const * const pattern, char const * const replacement) {
@@ -228,9 +204,8 @@ int main() {
     }
 
     char linha[400];
-    FilaCircular fila;
     Pokemon listaPokemon[803];
-    start(&fila);
+    start();
 
     ler();
 
@@ -252,7 +227,7 @@ int main() {
     for (int i = 0; i < numIds; i++) {
         for(int j = 0; j < cont; j++) {
             if(strcmp(ids[i], listaPokemon[j].id) == 0) {
-                empilhar(&fila, listaPokemon[j]);
+                inserir(listaPokemon[j]);
             }
         }
     }
@@ -275,19 +250,18 @@ int main() {
             id = strtok(NULL, " ");
             for (int j = 0; j < sizeof(listaPokemon); j++) {
                 if (strcmp(listaPokemon[j].id, id) == 0) {
-                    empilhar(&fila, listaPokemon[j]);
+                    inserir(listaPokemon[j]);
                     break;
                 }
             }           
         } else if(strcmp(token, "R") == 0) {
-            desempilhar(&fila);
+            remover();
         } 
     }
 
     fclose(file);
 
-    int posicao = fila.tam;
-    mostrar(&fila, posicao);
+    mostrar();
 
     return 0;
 }

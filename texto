@@ -1,0 +1,70 @@
+public CelulaPilha maiorPilha() throw Exception {
+    if(raiz == null) {
+        throw new Exception("Erro, arvore vazia");
+    }
+    return maiorPilha(raiz, null, 0);
+}
+
+private CelulaPilha maiorPilha(No i, CelulaPilha j, int maior) {
+    if(i == null) {
+        return j;
+    }
+
+    CelulaLista sentilenaLista = i.sentinela
+    while(sentilenaLista != null) {
+        int contador = 0;
+        CelulaPilha sentinelaPilha = sentilenaLista.topo;
+        while(sentinelaPilha != null) {
+            contador++;
+            sentinelaPilha = sentinelaPilha.prox;
+        }
+
+        if(contador > maior) {
+            maior = contador;
+            CelulaPilha maiorPilhaAtual = sentilenaLista.topo;
+        }
+
+        sentilenaLista = sentilenaLista.prox;
+    }
+    maiorPilha(i.esq, maiorPilhaAtual, maior);
+    maiorPilha(i.dir, maiorPilhaAtual, maior);    
+
+    return maiorPilhaAtual;
+}
+
+public boolean pesquisarContato(int ano, String nome) {
+   return pesquisarContato(ano, nome, raiz);
+}
+
+private boolean pesquisarContato(int ano, String nome, No i) {
+    if(i == null) return false;
+    
+    if(i.ano > ano) {
+        resp = pesquisarContato(ano, nome, i.esq);
+    } else  if(i.ano < ano) {
+        resp = pesquisarContato(ano, nome, i.dir);
+    }
+
+    char c = nome.charAt(0);
+    CelulaLista sentilenaLista = i.sentinela;
+
+    while(sentilenaLista != null && sentilenaLista.primeiraLetra != c) {
+        sentilenaLista = sentilenaLista.prox;
+    }
+
+    if(sentilenaLista == null) {
+        return false;
+    }
+
+    CelulaPilha j = sentinela.topo;
+
+    while(j != null) {
+        if(j.nome.equals(nome)) {
+            return true;
+        }
+
+        j = j.prox;
+    }
+
+    return false;
+}

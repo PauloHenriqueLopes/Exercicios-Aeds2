@@ -1,0 +1,21 @@
+typedef struct {
+    int elemento;
+    struct Celula* prox;
+} Celula;
+
+Celula* inicio;
+Celula* fim;
+
+void meiose() {
+    Celula* caminha = inicio;
+    while (caminha != NULL) {
+        caminha->elemento = caminha->elemento/2;
+
+        Celula* nova = (Celula*)malloc(sizeof(Celula));
+        nova->elemento = caminha->elemento;
+        nova.prox = caminha->prox;
+        
+        caminha->prox = nova;
+        caminha = nova.prox;
+    }
+}

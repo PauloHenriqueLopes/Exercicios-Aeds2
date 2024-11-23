@@ -1,0 +1,73 @@
+CelulaPilha* maiorPilha(No* raiz) {
+    if(raiz == NULL) {
+        return;
+    }
+    return maiorPilhaRec(raiz, null, 0);
+}
+
+CelulaPilha* maiorPilhaRec(No* i, CelulaPilha maiorPilha, int maior) {
+    if(i == null) {
+        return maiorPilha;
+    }
+    
+    CelulaLista* sentinelaLista = i->sentinela;
+
+    while(sentinelaLista != null) {
+        int contador = 0;
+        CelulaPilha* sentilenaPilha = sentilenaLista->topo;
+        while(sentilenaPilha != null) {
+            contador++;
+            sentilenaPilha = sentilenaPilha.prox;
+        }
+
+        if(contador > maior) {
+            maior = contador;
+            CelulaPilha* maiorPilhaAtual = sentilenaLista.topo;
+        }
+
+        sentilenaLista = sentilenaLista.prox;
+    }
+
+    maiorPilhaRec(i.esq, maiorPilha, maior);
+    maiorPilhaRec(i.dir, maiorPilha, maior);
+
+    return maiorPilhaAtual;
+}
+
+int pesquisarNome(No* raiz, int ano, char nome[]) {
+    if(raiz == NULL) {
+        return;
+    }
+    return pesquisarNomeRec(raiz, ano, nome, 0);
+}
+
+int pesquisarNomeRec(No* i, int ano, char nome[], int encontrado) {
+    if(i == NULL) {
+        return 0;
+    }
+
+    if(ano > i->ano) {
+        pesquisarNomeRec(i->dir, ano, nome, encontrado);
+    } else if(ano < i->ano) {
+        pesquisarNomeRec(i->esq, ano, nome, encontrado);
+    }
+    
+    char inicial = nome[0];
+    CelulaLista* sentinelaLista = i.sentilena;
+    while(sentilenaLista != NULL && sentilenaLista->primeiraLetra != inicial) sentilenaLista = sentilenaLista.prox;
+
+    if(sentilenaLista == NULL) {
+        return 0;
+    }
+
+    CelulaPilha* sentinelaPilha = sentilenaLista->topo;
+
+    while(sentilenaPilha != NULL) {
+        if(strcmp(sentilenaPilha->nome, nome) == 0) {
+            return 1;
+        }
+        sentilenaPilha = sentilenaPilha->prox;
+    }
+
+    return 0;
+}

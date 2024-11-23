@@ -1,0 +1,27 @@
+class No {
+    public int elemento;
+    public No esq, dir;
+}
+
+class Arvore {
+    private No raiz;
+    private int repetido = 0;
+
+    public void inserir(int x) {
+        raiz = inserir(x, raiz)
+    }
+
+    private No inserir(int x, No i){
+        if(i == null) {
+            i = new No(x);
+        } else if(i.elemento > x) {
+            i.esq = inserir(x, i.esq);
+        } else if(i.elemento < x) {
+            i.dir = inserir(x, i.dir);
+        } else {
+            repetido++;
+        }
+
+        return i;
+    }
+}
