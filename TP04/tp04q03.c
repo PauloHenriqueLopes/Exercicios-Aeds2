@@ -22,69 +22,157 @@ typedef struct {
     char captureDate[15];
 } Pokemon;
 
-typedef struct Celula {
+typedef struct No {
     Pokemon pokemon;
-    struct Celula* prox; 
-} Celula;
+    struct No* dir;
+    struct No* esq;
+    int nivel;
+} No;
 
-typedef struct {
-    Celula* primeiro;
-    Celula* ultimo;
-    int tam;
-} PilhaSequencial;
+No* raiz;
 
-
-void start(PilhaSequencial* pilha) {
-    pilha -> primeiro = NULL;
-    pilha -> ultimo = NULL;
-    pilha -> tam = 0;
+void start() {
+    raiz = NULL;
 }
 
-Celula* novaCelula(Pokemon pokemon) {
-    Celula* nova = (Celula*)malloc(sizeof(Celula));
-    if(nova == NULL) {
-        printf("Falha na alocacao da celula");
+No* newNo(Pokemon pokemon) {
+    No* novo = (No*)malloc(sizeof(No));
+    if (novo == NULL) {
+        printf("Erro de alocação de memória\n");
         exit(1);
     }
-    nova -> pokemon = pokemon;
-    nova -> prox = NULL;
-    return nova;
+    novo->pokemon = pokemon;
+    novo->dir = NULL;
+    novo->esq = NULL;
+    novo->nivel = 0;
+    return novo;
 }
 
-void empilhar(PilhaSequencial* pilha, Pokemon pokemon) {
-    Celula* nova = novaCelula(pokemon);
-    nova->prox = pilha->primeiro;
-    pilha->primeiro = nova;
-    if(pilha->ultimo == NULL) {
-        pilha->ultimo = nova;
+int getNivel(No* no) {
+    return(no == NULL) ? 0 : no->nivel;
+}
+
+int max(No* dir, No* esq) {
+    int nivelDir = dir != NULL ? dir->nivel : 0;
+    int nivelEsq = esq != NULL ? esq->nivel : 0;
+    return nivelDir > nivelEsq ? nivelDir : nivelEsq;
+}
+
+void setNivel(No* no) {
+    no->nivel = 1 + max(getNivel(no->esq), getNivel(no->dir));
+}
+
+No* rotacionarDir(No* no) {
+    if (no == NULL || no->esq == NULL) {
+        printf("Erro: rotacionarDir em nó NULL ou sem filho à esquerda\n");
+        return no;
     }
-    pilha->tam++;
+
+    No* noEsq = no->esq;
+    No* noEsqDir = noEsq->dir;
+
+    noEsq->dir = no;
+    no->esq = noEsqDir;
+
+    // Atualiza o nível dos nós após a rotação
+    setNivel(no);
+    setNivel(noEsq);
+
+    return noEsq;
 }
 
-void desempilhar(PilhaSequencial* pilha) {
-    if(pilha->primeiro == NULL) {
-        printf("Erro, pilha vazia");
-        exit(1);
+No* rotacionarEsq(No* no) {
+    if (no == NULL || no->dir == NULL) {
+        printf("Erro: rotacionarEsq em nó NULL ou sem filho à direita\n");
+        return no;
     }
 
-    Celula* removida = pilha->primeiro;
-    printf("(R) %s\n", removida->pokemon.name);
-    free(removida);
-    pilha->primeiro = pilha->primeiro->prox;
-    pilha->tam--;
+    No* noDir = no->dir;
+    No* noDirEsq = noDir->esq;
+
+    noDir->esq = no;
+    no->dir = noDirEsq;
+
+    // Atualiza o nível dos nós após a rotação
+    setNivel(no);
+    setNivel(noDir);
+
+    return noDir;
+}
+
+No* balancear(No* no) {
+    if (no == NULL) {
+        printf("Erro: Nó NULL encontrado durante balanceamento\n");
+        return NULL;
+    }
+
+    int fator = getNivel(no->dir) - getNivel(no->esq);
+    printf("Balanceando nó: %s, fator: %d\n", no->pokemon.name, fator);
+
+    if (abs(fator) <= 1) {
+        setNivel(no);  // O nó está balanceado, apenas ajusta o nível
+    } else if (fator == 2) {
+        int fatorFilhoDir = getNivel(no->dir->dir) - getNivel(no->dir->esq);
+        printf("Fator do filho direito: %d\n", fatorFilhoDir);
+
+        if (fatorFilhoDir == -1) {
+            no->dir = rotacionarDir(no->dir); // Rotação dupla à esquerda
+        }
+        no = rotacionarEsq(no); // Rotação simples à esquerda
+    } else if (fator == -2) {
+        int fatorFilhoEsq = getNivel(no->esq->dir) - getNivel(no->esq->esq);
+        printf("Fator do filho esquerdo: %d\n", fatorFilhoEsq);
+
+        if (fatorFilhoEsq == 1) {
+            no->esq = rotacionarEsq(no->esq); // Rotação dupla à direita
+            no = rotacionarDir(no); // Rotação simples à direita
+        }
+    }
+
+    setNivel(no);
+    return no;
 }
 
 
-void mostrar(PilhaSequencial* pilha, int pos) {
-    Celula *j = pilha->primeiro;
-    caminhar(j, pos);
+void inserirRec(Pokemon pokemon, No** i) {
+    if (*i == NULL) {
+        *i = newNo(pokemon);
+    } else if (strcmp(pokemon.name, (*i)->pokemon.name) < 0) {
+        inserirRec(pokemon, &(*i)->esq);
+    } else if (strcmp(pokemon.name, (*i)->pokemon.name) > 0) {
+        inserirRec(pokemon, &(*i)->dir);
+    } else {
+        printf("Erro ao inserir");
+        return;
+    }
+    *i = balancear(*i); 
 }
 
-void caminhar(Celula* j, int pos) {
-    if(j->prox != NULL) caminhar(j->prox, --pos);
-    printf("[%d] ", pos);
-    imprimir(j->pokemon);
+void inserir(Pokemon pokemon) {
+    inserirRec(pokemon, &raiz);
 }
+
+bool pesquisarRec(char name[], No* i) {
+    bool resp;
+    if(i == NULL) {
+        resp = false;
+    } else if(strcmp(name, i->pokemon.name) == 0) {
+        resp = true;
+    } else if(strcmp(name, i->pokemon.name) < 0) {
+        printf("esq ");
+        resp = pesquisarRec(name, i->esq);
+    } else {
+        printf("dir ");
+        resp = pesquisarRec(name, i->dir);
+    }
+    return resp;
+}
+
+bool pesquisar(char name[]) {
+    printf("raiz ");
+    return pesquisarRec(name, raiz);
+}
+
 
 char * replace(char const * const original, char const * const pattern, char const * const replacement) {
     size_t const replen = strlen(replacement);
@@ -136,9 +224,22 @@ void imprimir(Pokemon pokemon) {
            pokemon.generation, pokemon.captureDate);
 }
 
+void lerNomes(char listaNomes[][100]) {
+    char nome[100];
+    limparBuffer();
+    do {
+        fgets(nome, sizeof(nome), stdin);
+        nome[strcspn(nome, "\n")] = 0;
+        if (strcmp(nome, "FIM") != 0) {
+            strcpy(listaNomes[numNomes], nome);
+            numNomes++;
+        }
+    } while (strcmp(nome, "FIM") != 0);
+}   
+
 void ler() {
     while (numIds < 801) {
-        scanf("%s", ids[numIds]);
+        scanf("%4s", ids[numIds]);
         if (strcmp(ids[numIds], "FIM") == 0) {
             return;
         }
@@ -228,66 +329,49 @@ int main() {
     }
 
     char linha[400];
-    PilhaSequencial pilha;
-    Pokemon listaPokemon[803];
-    start(&pilha);
+    Pokemon listaPokemon[808];
+
+    start();
 
     ler();
+    char listaNomes[802][100];
+    lerNomes(listaNomes);
 
     int cont = 0;
     while (fgets(linha, sizeof(linha), file) != NULL) {
         linha[strcspn(linha, "\n")] = '\0';
-        char compareString[400];
         char *auxstring;
         auxstring = replace(linha, ", ", ";");
         auxstring = replace(auxstring, ",,,", ", , ,");
         auxstring = replace(auxstring, ",,", ", ,");
         auxstring = replace(auxstring, "\"", "");
 
-        strcpy(compareString, linha);
         listaPokemon[cont] = parsePokemon(auxstring);
         cont++;
     }
 
+    printf("AQUI\n");
+
     for (int i = 0; i < numIds; i++) {
         for(int j = 0; j < cont; j++) {
             if(strcmp(ids[i], listaPokemon[j].id) == 0) {
-                empilhar(&pilha, listaPokemon[j]);
+                inserir(listaPokemon[j]);
+                j = cont;
             }
         }
-    }
-    
-    
-    int n;
-    scanf("%d", &n);
-    limparBuffer();
-
-    for (int i = 0; i < n; i++) {
-        char comando[20];
-        fgets(comando, sizeof(comando), stdin);
-        comando[strcspn(comando, "\n")] = '\0';
-
-        char* token = strtok(comando, " ");
-        char* id;
-        int pos;
-
-        if(strcmp(token, "I") == 0) {
-            id = strtok(NULL, " ");
-            for (int j = 0; j < sizeof(listaPokemon); j++) {
-                if (strcmp(listaPokemon[j].id, id) == 0) {
-                    empilhar(&pilha, listaPokemon[j]);
-                    break;
-                }
-            }           
-        } else if(strcmp(token, "R") == 0) {
-            desempilhar(&pilha);
-        } 
     }
 
     fclose(file);
 
-    int posicao = pilha.tam;
-    mostrar(&pilha, posicao);
+    for(int i = 0; i < numNomes; i++) {
+        printf("%s\n", listaNomes[i]);
+        bool resp = pesquisar(listaNomes[i]);
+        if(resp == true) {
+            printf("SIM\n");
+        } else {
+            printf("NAO\n");
+        }
+    }
 
     return 0;
 }
