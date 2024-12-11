@@ -1,0 +1,25 @@
+public int getAltura(No i) {
+    if(i == null) {
+        return -1;
+    } else {
+        return 1 + Math.max(getAltura(i.esq), getAltura(i.dir));
+    }
+}
+
+public int getNos(No i) {
+    if(i == null) {
+        return 0;
+    } else {
+        return 1 + qntNos(i.esq) + qntNos(i.dir);
+    }
+}
+
+public boolean isMax(Double valor) {
+    int altura = getAltura(raiz);
+    int quantNos = qetNos(raiz);
+    boolean resp = false;
+    if(altura <= valor*Math.log2(qntNos)) {
+        resp = true;
+    }
+    return resp;
+}

@@ -1,0 +1,26 @@
+void inserir(int x ) {
+    int pos = hashT1(x);
+
+    if(t1[pos] == NULO) {
+        t1[pos] = x;
+    } else {
+        pos = hashT2(x);
+        if(pos == 0) {
+            arvore.inserir(x);
+        } else if(pos == 1) {
+            lista.inserir(x);
+        } else {
+            pos = hashT3(x);
+            if(t3[pos] == NULO) {
+                t3[pos] = x;
+            } else {
+                if(reseva < maxReserva) {
+                    t3[pos] = x;
+                    reserva++;                    
+                } else {
+                    System.out.println("Area de reserva cheia!");
+                }
+            }
+        }
+    }
+}

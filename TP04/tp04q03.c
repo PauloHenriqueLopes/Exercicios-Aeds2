@@ -321,7 +321,7 @@ Pokemon parsePokemon(char *linha) {
 }
 
 int main() {
-    FILE *file = fopen("/home/paulo/Documents/programacao/Exercicios-Aeds2/TP04/pokemon.csv", "r");
+    FILE *file = fopen("/tmp/pokemon.csv", "r");
 
     if (!file) {
         printf("Não foi possível abrir o arquivo.");

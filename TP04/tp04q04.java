@@ -176,19 +176,23 @@ class Pokemon {
 }
 
 class No {
+    public boolean cor;
     public Pokemon pokemon;
     public No dir, esq;
-    public boolean cor;
 
-    public No(Pokemon pokemon) {
-        this(pokemon, null, null, false);
+    public No(){
+        this(null);
     }
 
-    public No(Pokemon pokemon, boolean cor) {
-        this(pokemon, null, null, cor);
+    public No(Pokemon pokemon){
+        this(pokemon,false,null,null);
     }
 
-     public No(Pokemon pokemon, No dir, No esq, boolean cor) {
+    public No(Pokemon pokemon, boolean cor){
+        this(pokemon,cor,null,null);
+    }
+
+    public No(Pokemon pokemon, boolean cor,No esq, No dir){
         this.cor = cor;
         this.pokemon = pokemon;
         this.esq = esq;
@@ -200,7 +204,7 @@ class ArvoreAN {
     public No raiz;
 
     public ArvoreAN() {
-        raiz = null;
+        this.raiz = null;
     }
 
     public boolean pesquisar(String name) {
@@ -225,52 +229,42 @@ class ArvoreAN {
     }
 
     public void inserir(Pokemon pokemon) throws Exception {
-        if(raiz == null) {
+        if(this.raiz == null) {
             raiz = new No(pokemon);
-            System.out.println("Antes, zero pokemons. Agora, raiz(" + raiz.pokemon.getName() + ").");
-        } else if(raiz.esq == null && raiz.dir == null) {
-            if(pokemon.getName().compareTo(raiz.pokemon.getName()) < 0) {
-                raiz.esq = new No(pokemon);
-                System.out.println("Antes, um pokemon. Agora, raiz(" + raiz.pokemon.getName() + ") e esq(" + raiz.esq.pokemon.getName() + ").");
+        } else if(this.raiz.esq == null && this.raiz.dir == null) {
+            if(pokemon.getName().compareTo(this.raiz.pokemon.getName()) < 0) {
+                this.raiz.esq = new No(pokemon);
             } else {
-                raiz.dir = new No(pokemon);
-                System.out.println("Antes, um pokemon. Agora, raiz(" + raiz.pokemon.getName() + ") e dir(" + raiz.dir.pokemon.getName() + ").");
+                this.raiz.dir = new No(pokemon);
             }
-        } else if(raiz.esq == null) {
-            if(pokemon.getName().compareTo(raiz.pokemon.getName()) < 0) {
-                raiz.esq = new No(pokemon);
-                System.out.println("Antes, dois pokemons(A). Agora, raiz(" + raiz.pokemon.getName() + "), esq (" + raiz.esq.pokemon.getName() + ") e dir(" + raiz.dir.pokemon.getName() + ").");
-            } else if(pokemon.getName().compareTo(raiz.dir.pokemon.getName()) < 0) {
-                raiz.esq = new No(raiz.pokemon);
-                raiz.pokemon = pokemon;
-                System.out.println("Antes, dois pokemons(B). Agora, raiz(" + raiz.pokemon.getName() + "), esq (" + raiz.esq.pokemon.getName() + ") e dir(" + raiz.dir.pokemon.getName() + ").");
+        } else if(this.raiz.esq == null) {
+            if(pokemon.getName().compareTo(this.raiz.pokemon.getName()) < 0) {
+                this.raiz.esq = new No(pokemon);
+            } else if(pokemon.getName().compareTo(this.raiz.dir.pokemon.getName()) < 0) {
+                this.raiz.esq = new No(this.raiz.pokemon);
+                this.raiz.pokemon = pokemon;
             } else {
-                raiz.esq = new No(raiz.pokemon);
-                raiz.pokemon = raiz.dir.pokemon;
-                raiz.dir.pokemon = pokemon;
-                System.out.println("Antes, dois pokemons(C). Agora, raiz(" + raiz.pokemon.getName() + "), esq (" + raiz.esq.pokemon.getName() + ") e dir(" + raiz.dir.pokemon.getName() + ").");
+                this.raiz.esq = new No(raiz.pokemon);
+                this.raiz.pokemon = this.raiz.dir.pokemon;
+                this.raiz.dir.pokemon = pokemon;
             }
-            raiz.esq.cor = raiz.dir.cor = false;
-        } else if(raiz.dir == null) {
-            if(pokemon.getName().compareTo(raiz.pokemon.getName()) > 0) {
-                raiz.dir = new No(pokemon);
-                System.out.println("Antes, dois pokemons(D). Agora, raiz(" + raiz.pokemon.getName() + "), esq (" + raiz.esq.pokemon.getName() + ") e dir(" + raiz.dir.pokemon.getName() + ").");
-            } else if(pokemon.getName().compareTo(raiz.esq.pokemon.getName()) > 0) {
-                raiz.dir = new No(raiz.pokemon);
-                raiz.pokemon = pokemon;
-                System.out.println("Antes, dois pokemons(E). Agora, raiz(" + raiz.pokemon.getName() + "), esq (" + raiz.esq.pokemon.getName() + ") e dir(" + raiz.dir.pokemon.getName() + ").");
+            this.raiz.esq.cor = this.raiz.dir.cor = false;
+        } else if(this.raiz.dir == null) {
+            if(pokemon.getName().compareTo(this.raiz.pokemon.getName()) > 0) {
+                this.raiz.dir = new No(pokemon);
+            } else if(pokemon.getName().compareTo(this.raiz.esq.pokemon.getName()) > 0) {
+                this.raiz.dir = new No(this.raiz.pokemon);
+                this.raiz.pokemon = pokemon;
             } else {
-                raiz.dir = new No(raiz.pokemon);
-                raiz.pokemon = raiz.esq.pokemon;
-                raiz.esq.pokemon = pokemon;
-                System.out.println("Antes, dois pokemons(F). Agora, raiz(" + raiz.pokemon.getName() + "), esq (" + raiz.esq.pokemon.getName() + ") e dir(" + raiz.dir.pokemon.getName() + ").");
+                this.raiz.dir = new No(this.raiz.pokemon);
+                this.raiz.pokemon = this.raiz.esq.pokemon;
+                this.raiz.esq.pokemon = pokemon;
             }
-            raiz.esq.cor = raiz.dir.cor = false;
+            this.raiz.esq.cor = this.raiz.dir.cor = false;
         } else {
-            System.out.println("Arvore com tres ou mais elementos...");
-            inserir(pokemon, null, null, null, raiz);
+            inserir(pokemon, null, null, null, this.raiz);
         }
-        raiz.cor = false;
+        this.raiz.cor = false;
     }
 
     private void balancear(No bisavo, No avo, No pai, No i) {
