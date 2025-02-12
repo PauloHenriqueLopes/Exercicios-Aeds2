@@ -680,7 +680,7 @@ public class Pokedex {
 
         Pokedex pokedex = new Pokedex();
 
-        try(Scanner lerArquivo = new Scanner(new File("/tmp/pokemon.csv"));) {
+        try(Scanner lerArquivo = new Scanner(new File("pokemon.csv"));) {
             lerArquivo.nextLine();
             while (lerArquivo.hasNextLine()) {
                 String linha = lerArquivo.nextLine();
@@ -711,10 +711,10 @@ public class Pokedex {
         // ordenacaoPorCountingSort(listaPokemons);
         // ordenacaoPorMergeSort(listaPokemons);        
         // ordenacaoParcialPorSelecao(listaPokemons);
-        ordenacaoParcialPorQuickSort(listaPokemons);        
+        // ordenacaoParcialPorQuickSort(listaPokemons);        
 
-        // for (Pokemon pokemon : listaPokemons) {
-        //     pokemon.imprimir(pokemon);
-        // }
+        for (Pokemon pokemon : listaPokemons) {
+            pokemon.imprimir(pokemon);
+        }
     }
 }
